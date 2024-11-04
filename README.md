@@ -7,7 +7,8 @@ If you’re new to Node.js, take a look at the `package.json` file. There’s a 
 ```json
 "scripts": {
   "front-dev": "vite"
-}```
+}
+```
 
 This allows you to quickly start Vite by running:
 
