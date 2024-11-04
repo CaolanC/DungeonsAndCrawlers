@@ -12,16 +12,16 @@ If you’re new to Node.js, take a look at the `package.json` file. There’s a 
 
 This allows you to quickly start Vite by running:
 
-    `npm run front-dev`
+    npm run front-dev
 
 Don’t forget to install all dependencies by running:
 
-    `npm install`
+    npm install
 
 This will install everything listed in package.json that Vite and Express need.
 
 # Main Entry Point
-    The main entry point for the application is src/main.js. This is where we set up the Express server and can build out API routes as needed.
+The main entry point for the application is src/main.js. This is where we set up the Express server and can build out API routes as needed.
 
 # Directory Overview
     public/ – Holds all static files served to the frontend, like HTML, images, and stylesheets.
