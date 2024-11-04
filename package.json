@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "front-dev": "vite"
+    "front-dev": "vite",
+    "start":"node ./src/main.js"
   },
   "author": "",
   "license": "ISC",
@@ -12,6 +13,7 @@
     "vite": "^5.4.10"
   },
   "dependencies": {
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "three": "^0.170.0"
   }
 }

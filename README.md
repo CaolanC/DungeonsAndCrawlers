@@ -18,6 +18,8 @@ Don’t forget to install all dependencies by running:
 
     npm install
 
+You can start the backend using `npm run start`. It will output the port it's listening on, go to localhost:your_port as a url in a web browser to visit the page.
+
 This will install everything listed in package.json that Vite and Express need.
 
 # Main Entry Point
