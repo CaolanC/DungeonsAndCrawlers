@@ -18,9 +18,9 @@ Don’t forget to install all dependencies by running:
 
     npm install
 
-You can start the backend using `npm run start`. It will output the port it's listening on, go to localhost:your_port as a url in a web browser to visit the page.
-
 This will install everything listed in package.json that Vite and Express need.
+
+You can start the backend using `npm run start`. It will output the port it's listening on, go to localhost:your_port as a url in a web browser to visit the page.
 
 # Main Entry Point
 The main entry point for the application is src/main.js. This is where we set up the Express server and can build out API routes as needed.
