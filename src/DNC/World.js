@@ -65,3 +65,7 @@ function main() {
     chunk.set(block, 15, 15, 15);
     console.log(chunk.at(15, 15, 15));
 }
+
+// TODO: During registration time, we need to create a map for unique ID's of blocks for the server's use, to a way for clients and users to identify blocks "DNC:stone" for example is mapped to an abstract id decided by the system
+
+// TODO: Expand on our blocks, refine the properties and implement a registry system for the frontend and backend as well as shared components. Add a solid block, skip direct registry for now, get them sent to our frontned.
