@@ -57,26 +57,30 @@ class World {
 	}
 }
 
-main();
-
-function main() {
-	let chunk = new Chunk(0, 0);
-	let block = BlockMaker.Create(DNC.NAMESPACE, DNC.BLOCK.STONE);
-	chunk.set(block, 15, 15, 15);
-	console.log(chunk.at(15, 15, 15));
-}
-
 // TODO: During registration time, we need to create a map for unique ID's of blocks for the server's use, to a way for clients and users to identify blocks "DNC:stone" for example is mapped to an abstract id decided by the system
 
 // TODO: Expand on our blocks, refine the properties and implement a registry system for the frontend and backend as well as shared components. Add a solid block, skip direct registry for now, get them sent to our frontned.
 
+import { readdir } from "fs/promises";
+import path from "path";
+import { DNC_Blocks } from "./blocks/index.js";
+
 class BlockRegistry {
 	static defaultRegistry = new BlockRegistry();
+	static clientRegistry = new BlockRegistry();
 
-	#registerBlock(block) { }
+	#registerBlock(block) {
+		console.log(block.namespace + block.name);
+	}
 
 	static RegisterBlock(block) {
 		this.defaultRegistry.#registerBlock(block);
+	}
+
+	static async RegisterDefaultBlocks() {
+		DNC_Blocks.forEach((block) => {
+			console.log(block.name);
+		});
 	}
 }
 
@@ -84,3 +88,31 @@ class BlockRegistry {
 // TODO: Implement data view to store chunk height maps in a flatbuffer. 11 bits, signed -1023-1023. Also, when it comes to chunk loading what we really need to do is ->
 // draw a cylinder around the player, start from the render distance in the sky. When a chunk is loaded work down until all the values of the height map have been used. Then fill al
 // the remaining values.
+
+import { DNC_Biomes } from "./biomes/index.js";
+class BiomeRegistry {
+	static defaultRegistry = new BiomeRegistry();
+
+	#registerBiome(biome) { }
+
+	static RegisterBiome(biome) {
+		this.defaultRegistry.#registerBiome(biome);
+	}
+
+	static async RegisterDefaultBiomes() {
+		await DNC_Biomes.forEach((biome) => {
+			console.log(biome);
+		});
+	}
+}
+
+async function main() {
+	let chunk = new Chunk(0, 0);
+	let block = BlockMaker.Create(DNC.NAMESPACE, DNC.BLOCK.STONE);
+	chunk.set(block, 15, 15, 15);
+	console.log(chunk.at(15, 15, 15));
+	await BlockRegistry.RegisterDefaultBlocks();
+	await BiomeRegistry.RegisterDefaultBiomes();
+}
+
+main();
