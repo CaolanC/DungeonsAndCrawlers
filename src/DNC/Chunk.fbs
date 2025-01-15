@@ -1,0 +1,14 @@
+namespace DNC;
+
+table Chunk {
+    x: int;
+    y: int;
+    z: int;
+    blocks: [uint]; // 32 bits for our bitwise encoding
+}
+
+table ChunksResponse {
+    chunks: [Chunk];
+}
+
+root_type ChunksResponse;
