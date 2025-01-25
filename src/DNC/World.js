@@ -6,7 +6,10 @@ const DNC = {
 		// into the block itself. TODO: Consider adding metadata to air with the extra bits.
 		STONE: 1,
 	},
+    FRAMERATE: 60,
 };
+
+DNC.FRAME_DURATION = 1000 / DNC.FRAMERATE;
 
 /**
  * Block bit layout (32 bits total):
@@ -62,7 +65,6 @@ class World {
 // TODO: Expand on our blocks, refine the properties and implement a registry system for the frontend and backend as well as shared components. Add a solid block, skip direct registry for now, get them sent to our frontned.
 
 import { readdir } from "fs/promises";
-import path from "path";
 import { DNC_Blocks } from "./blocks/index.js";
 
 class BlockRegistry {
@@ -106,6 +108,64 @@ class BiomeRegistry {
 	}
 }
 
+import express from 'express';
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+
+
+export class Server {
+    
+    world = null;
+    #lastFrameTime = Date.now();
+    constructor(app, port) {
+        this.app = app;
+        this.port = port;
+    }
+
+
+    start() {
+
+        this.initApp();
+        this.app.listen(this.port, () => {
+            console.log(`PORT: ${this.port}`);
+        });
+    }
+
+    gameLoop() {
+        const now = Date.now();
+
+        const deltaTime = now - this.lastFrameTime;
+
+        if (deltaTime >= DNC.FRAME_DURATION) {
+            this.#lastFrameTime = now;
+            // Game state calls and such
+        }
+
+        setTimeout(() => this.gameLoop(), Math.max(0, DNC.FRAME_DURATION - deltaTime));
+    }
+
+    initApp() {
+
+        this.app.use(express.static(path.join(__dirname, '../../public')));
+
+        this.app.get('/join', (req, res) => {
+            res.sendFile(path.join(__dirname, '../../public', 'game.html'));
+        });
+
+        this.app.get('*', (req, res) => {
+            res.sendFile(path.join(__dirname, '../../public', 'index.html'));
+        });
+    }
+
+
+    loadMainMenu() {
+    }
+}
+
 async function main() {
 	let chunk = new Chunk(0, 0);
 	let block = BlockMaker.Create(DNC.NAMESPACE, DNC.BLOCK.STONE);
@@ -114,5 +174,3 @@ async function main() {
 	await BlockRegistry.RegisterDefaultBlocks();
 	await BiomeRegistry.RegisterDefaultBiomes();
 }
-
-main();

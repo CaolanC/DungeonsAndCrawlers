@@ -11,6 +11,7 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "concurrently": "^9.1.2",
         "flatbuffers": "^24.12.23",
         "vite": "^5.4.10"
     },
