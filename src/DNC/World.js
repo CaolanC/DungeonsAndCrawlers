@@ -159,6 +159,12 @@ export class Server {
         this.app.get('*', (req, res) => {
             res.sendFile(path.join(__dirname, '../../public', 'index.html'));
         });
+
+        const socket = new WebSocket("ws://localhost:24011");
+
+        socket.addEventListener("open", () => {
+            console.log("Established websocket connection");
+        });
     }
 
 
