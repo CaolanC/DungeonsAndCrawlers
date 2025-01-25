@@ -101,5 +101,9 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-animate();
+function websocketConnect() {
+    WebSocket = new WebSocket("ws://localhost:24011");
+}
 
+animate();
+websocketConnect();
