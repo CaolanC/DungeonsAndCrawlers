@@ -115,12 +115,21 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-
+class PlayerHandler {
+    players = new Map();
+    constructor() {
+        
+    }
+}
 
 export class Server {
     
     world = null;
+    tick_counter = 0;
+    player_handler = new PlayerHandler();
+
     #lastFrameTime = Date.now();
+
     constructor(app, port) {
         this.app = app;
         this.port = port;
@@ -138,13 +147,13 @@ export class Server {
     gameLoop() {
         const now = Date.now();
 
-        const deltaTime = now - this.lastFrameTime;
+        const deltaTime = now - this.#lastFrameTime;
 
         if (deltaTime >= DNC.FRAME_DURATION) {
             this.#lastFrameTime = now;
             // Game state calls and such
         }
-
+        this.tick_counter++; // For client syncing. We need a global tick counter so that clients only send us updates every tick, instead of wasting calls to the server.
         setTimeout(() => this.gameLoop(), Math.max(0, DNC.FRAME_DURATION - deltaTime));
     }
 
