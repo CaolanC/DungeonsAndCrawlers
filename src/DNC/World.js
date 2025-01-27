@@ -17,7 +17,7 @@ const DNC = {
 		// into the block itself. TODO: Consider adding metadata to air with the extra bits.
 		STONE: 1,
 	},
-    FRAMERATE: 60,
+    FRAMERATE: 10,
     RENDER_DISTANCE: 8
 };
 
@@ -69,9 +69,26 @@ class ChunkManager {
     constructor(render_distance=DNC.RENDER_DISTANCE) {
         this.render_distance = render_distance;
     }
-
+    
     getValidChunks(position) {
-        
+        const CHUNK_SIZE = DNC.CHUNK_SIZE;
+        const render_distance = this.render_distance;
+
+        const cx = Math.floor(position.x / CHUNK_SIZE);
+        const cy = Math.floor(position.y / CHUNK_SIZE);
+        const cz = Math.floor(position.z / CHUNK_SIZE);
+
+        const nearbyChunks = [];
+
+        for (let x = cx - render_distance; x <= cx + render_distance; x++) {
+            for (let y = cy - render_distance; y <= cy + render_distance; y++) {
+                for (let z = cz - render_distance; z <= cz + render_distance; z++) {
+                    nearbyChunks.push({ x, y, z });
+                }
+            }
+        }
+
+    return nearbyChunks;
     }
 }
 
@@ -126,6 +143,14 @@ class BiomeRegistry {
 	}
 }
 
+class Position {
+    constructor(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}   
+
 class Player {
     
     custom_spawnpoint = null;
@@ -144,6 +169,10 @@ class PlayerManager {
     addPlayer(username, player) {
         this.players.set(username, player);
         console.log(player.display_name);
+    }
+
+    getPlayers() {
+        return this.players;
     }
 }
 
@@ -165,13 +194,15 @@ export class Server {
     start() {
 
         this.initApp();
+        this.gameLoop();
         this.app.listen(this.port, () => {
             console.log(`PORT: ${this.port}`);
         });
     }
 
     getDefaultSpawnPoint() {
-        return (0, 0, 0);
+        const position = new Position(0, 0, 0);
+        return position;
     }
 
     gameLoop() {
@@ -181,6 +212,9 @@ export class Server {
 
         if (deltaTime >= DNC.FRAME_DURATION) {
             this.#lastFrameTime = now;
+            this.playerManager.getPlayers().forEach((player, key) => {
+                console.log(this.chunkManager.getValidChunks(player.position));
+            });
             // Game state calls and such
         }
 
