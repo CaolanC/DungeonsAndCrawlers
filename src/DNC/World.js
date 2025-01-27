@@ -18,6 +18,7 @@ const DNC = {
 		STONE: 1,
 	},
     FRAMERATE: 60,
+    RENDER_DISTANCE: 8
 };
 
 DNC.FRAME_DURATION = 1000 / DNC.FRAMERATE;
@@ -63,7 +64,16 @@ class Chunk {
 	}
 }
 
-class ChunkManager { }
+class ChunkManager { 
+
+    constructor(render_distance=DNC.RENDER_DISTANCE) {
+        this.render_distance = render_distance;
+    }
+
+    getValidChunks(position) {
+        
+    }
+}
 
 class World {
 	constructor(seed) {
@@ -116,11 +126,24 @@ class BiomeRegistry {
 	}
 }
 
+class Player {
+    
+    custom_spawnpoint = null;
+    constructor(display_name, position) {
+        this.display_name = display_name;
+        this.position = position;        
+    }
+}
 
 class PlayerManager {
     players = new Map();
     constructor() {
-        
+
+    }
+
+    addPlayer(username, player) {
+        this.players.set(username, player);
+        console.log(player.display_name);
     }
 }
 
@@ -128,7 +151,8 @@ export class Server {
     
     world = null;
     tick_counter = 0;
-    player_handler = new PlayerManager();
+    playerManager = new PlayerManager();
+    chunkManager = new ChunkManager();
 
     #lastFrameTime = Date.now();
 
@@ -144,6 +168,10 @@ export class Server {
         this.app.listen(this.port, () => {
             console.log(`PORT: ${this.port}`);
         });
+    }
+
+    getDefaultSpawnPoint() {
+        return (0, 0, 0);
     }
 
     gameLoop() {
@@ -171,10 +199,11 @@ export class Server {
         });
 
         this.app.post('/join', (req, res) => {
-            console.log(req.body);
+            const username = req.body.username;
+            const player = new Player(username, this.getDefaultSpawnPoint());
+            this.playerManager.addPlayer(username, player);
             res.redirect('/game');
         });
-
 
         this.app.get('/', (req, res) => {
             res.sendFile(path.join(__dirname, '../../public', 'index.html'));
