@@ -1,3 +1,14 @@
+import { readdir } from "fs/promises";
+import { DNC_Blocks } from "./blocks/index.js";
+import { DNC_Biomes } from "./biomes/index.js";
+import express from 'express';
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const DNC = {
 	CHUNK_SIZE: 16,
 	NAMESPACE: 255,
@@ -64,8 +75,6 @@ class World {
 
 // TODO: Expand on our blocks, refine the properties and implement a registry system for the frontend and backend as well as shared components. Add a solid block, skip direct registry for now, get them sent to our frontned.
 
-import { readdir } from "fs/promises";
-import { DNC_Blocks } from "./blocks/index.js";
 
 class BlockRegistry {
 	static defaultRegistry = new BlockRegistry();
@@ -91,7 +100,6 @@ class BlockRegistry {
 // draw a cylinder around the player, start from the render distance in the sky. When a chunk is loaded work down until all the values of the height map have been used. Then fill al
 // the remaining values.
 
-import { DNC_Biomes } from "./biomes/index.js";
 class BiomeRegistry {
 	static defaultRegistry = new BiomeRegistry();
 
@@ -108,14 +116,8 @@ class BiomeRegistry {
 	}
 }
 
-import express from 'express';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import { dirname } from 'path';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
-class PlayerHandler {
+class PlayerManager {
     players = new Map();
     constructor() {
         
@@ -126,7 +128,7 @@ export class Server {
     
     world = null;
     tick_counter = 0;
-    player_handler = new PlayerHandler();
+    player_handler = new PlayerManager();
 
     #lastFrameTime = Date.now();
 
@@ -153,20 +155,34 @@ export class Server {
             this.#lastFrameTime = now;
             // Game state calls and such
         }
+
         this.tick_counter++; // For client syncing. We need a global tick counter so that clients only send us updates every tick, instead of wasting calls to the server.
         setTimeout(() => this.gameLoop(), Math.max(0, DNC.FRAME_DURATION - deltaTime));
     }
 
     initApp() {
 
+        this.app.use(express.json());
+        this.app.use(express.urlencoded({ extended: true}));
         this.app.use(express.static(path.join(__dirname, '../../public')));
 
-        this.app.get('/join', (req, res) => {
+        this.app.get('/game', (req, res) => {
             res.sendFile(path.join(__dirname, '../../public', 'game.html'));
         });
 
-        this.app.get('*', (req, res) => {
+        this.app.post('/join', (req, res) => {
+            console.log(req.body);
+            res.redirect('/game');
+        });
+
+
+        this.app.get('/', (req, res) => {
             res.sendFile(path.join(__dirname, '../../public', 'index.html'));
+        });
+
+
+        this.app.get('*', (req, res) => {
+            res.send('Bad page');
         });
 
         const socket = new WebSocket("ws://localhost:24011");
