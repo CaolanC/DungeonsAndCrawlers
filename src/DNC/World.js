@@ -213,6 +213,7 @@ export class Server {
         if (deltaTime >= DNC.FRAME_DURATION) {
             this.#lastFrameTime = now;
             this.playerManager.getPlayers().forEach((player, key) => {
+                //EntityPhysicsManager.updatePlayerPhysics(player);
                 console.log(this.chunkManager.getValidChunks(player.position));
             });
             // Game state calls and such
