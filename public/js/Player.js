@@ -28,15 +28,14 @@ class ClientChunkManager
     }
 
     async getVisibleChunks() {
-            let x = Math.floor(this.player.position.x / CHUNK_SIZE);
-            let y = Math.floor(this.player.position.y / CHUNK_SIZE);
-            let z = Math.floor(this.player.position.z / CHUNK_SIZE);
+        let x = Math.floor(this.player.position.x / CHUNK_SIZE);
+        let y = Math.floor(this.player.position.y / CHUNK_SIZE);
+        let z = Math.floor(this.player.position.z / CHUNK_SIZE);
 
-            for(let cx = x - this.render_distance; cx <= x + this.render_distance; cx++) {
-                for(let cy = y - this.render_distance; cy <= y + this.render_distance; cy++) {
-                    for(let cz = z - this.render_distance; cz <= z + this.render_distance; cz++) {
+        for(let cx = x - this.render_distance; cx <= x + this.render_distance; cx++) {
+            for(let cy = y - this.render_distance; cy <= y + this.render_distance; cy++) {
+                for(let cz = z - this.render_distance; cz <= z + this.render_distance; cz++) {
                         
-                    }
                 }
             }
         }
