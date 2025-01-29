@@ -129,16 +129,19 @@ class BlockRegistry {
 
 class BiomeRegistry {
 	static defaultRegistry = new BiomeRegistry();
+    static biomes = new Map();
 
-	#registerBiome(biome) { }
+	static #registerBiome(biome) { 
+        this.biomes.set(`${biome.mod_namespace}:${biome.name}`, biome);
+    }
 
 	static RegisterBiome(biome) {
-		this.defaultRegistry.#registerBiome(biome);
+		this.#registerBiome(biome);
 	}
 
 	static async RegisterDefaultBiomes() {
 		await DNC_Biomes.forEach((biome) => {
-			console.log(biome);
+            this.RegisterBiome(biome);
 		});
 	}
 }
@@ -260,7 +263,7 @@ export class Server {
     loadMainMenu() {
     }
 }
-
+main();
 async function main() {
 	let chunk = new Chunk(0, 0);
 	let block = BlockMaker.Create(DNC.NAMESPACE, DNC.BLOCK.STONE);
@@ -268,4 +271,5 @@ async function main() {
 	console.log(chunk.at(15, 15, 15));
 	await BlockRegistry.RegisterDefaultBlocks();
 	await BiomeRegistry.RegisterDefaultBiomes();
+    console.log(BiomeRegistry.biomes);
 }
