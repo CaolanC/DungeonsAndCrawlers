@@ -1,5 +1,10 @@
 //import * as THREE from 'three';
+
+import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
+
 console.log("Working in public");
+
+// Three.js
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -15,6 +20,7 @@ const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(geometry, material);
 cube.castShadow = true;
 cube.receiveShadow = true;
+cube.position.set(0, 0.5, 0);
 scene.add(cube);
 
 const groundGeometry = new THREE.PlaneGeometry(50, 50);
@@ -40,6 +46,61 @@ const move = { forward: 0, backward: 0, left: 0, right: 0, up: 0, down: 0 };
 const speed = 0.2;
 let rotation = { x: 0, y: 0 };
 let sensitivity = 0.002;
+
+// Cannon-es.js
+
+// const testGeometry = new THREE.BoxGeometry(1, 1, 1);
+// const testMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+// const testCube = new THREE.Mesh(testGeometry, testMaterial);
+// testCube.position.set(0, 10, 0);
+// scene.add(testCube);
+
+const testSphereGeom = new THREE.SphereGeometry(1);
+const testSphereMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+const testSphere = new THREE.Mesh(testSphereGeom, testSphereMat);
+testSphere.position.set(0, 10, 0);
+scene.add(testSphere);
+
+// const wallGeom = new THREE.BoxGeometry(5, 5, 1);
+// const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+// const wall = new THREE.Mesh(wallGeom, wallMat);
+// wall.position.set(0, 2.5, -2);
+// scene.add(wall);
+
+const world = new CANNON.World({
+    gravity: new CANNON.Vec3(0, -9.81, 0),
+});
+
+const radius = 0.5;
+const halfExtents = new CANNON.Vec3(radius, radius, radius);
+// const cubeBody = new CANNON.Body({
+//     mass: 5,
+//     shape: new CANNON.Box(halfExtents),
+// });
+// cubeBody.position.set(0, 10, 0);
+// world.addBody(cubeBody);
+
+const sphereBody = new CANNON.Body({
+    mass: 10,
+    shape: new CANNON.Sphere(1),
+})
+sphereBody.position.set(0, 10, 0);
+world.addBody(sphereBody);
+
+const cubeBody2 = new CANNON.Body({
+    mass: 0,
+    shape: new CANNON.Box(halfExtents),
+})
+cubeBody2.position.set(0, 0.5, 0);
+world.addBody(cubeBody2);
+
+const groundBody = new CANNON.Body({
+    mass: 0,
+    type: CANNON.Body.STATIC,
+    shape: new CANNON.Plane(),
+})
+groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+world.addBody(groundBody);
 
 document.body.addEventListener('click', () => document.body.requestPointerLock());
 
@@ -96,15 +157,28 @@ function updateCamera() {
     camera.rotation.y = rotation.y;
 }
 
+sphereBody.addEventListener('collide', (event) => {
+    console.log("Collision detected with:", event.body);
+    sphereBody.velocity.set(0, 0, 0);
+    sphereBody.angularVelocity.set(0, 0, 0);
+    sphereBody.sleep();
+})
+
 function animate() {
     requestAnimationFrame(animate);
     updateCamera();
+    world.fixedStep();
+    testSphere.position.copy(sphereBody.position);
+    // testCube.position.copy(cubeBody.position);
+    cube.position.copy(cubeBody2.position);
     renderer.render(scene, camera);
 }
 
 function websocketConnect() {
     WebSocket = new WebSocket("ws://localhost:24011");
 }
+
+// Running
 
 animate();
 websocketConnect();
