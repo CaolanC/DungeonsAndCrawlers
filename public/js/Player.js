@@ -1,3 +1,6 @@
+import * as THREE from 'three';
+import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
+
 const CHUNK_SIZE = 16;
 
 class Server
