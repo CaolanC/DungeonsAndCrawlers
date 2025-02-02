@@ -4,6 +4,32 @@ import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
 
 console.log("Working in public");
 
+export class Player
+{
+    constructor(scene, world){ // scene and world of threejs render
+        this.scene = scene;
+        this.world = world;
+
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        this.playercube = new THREE.Mesh(geometry, material);
+        this.playercube.position.set(2, 1, 0);
+        this.scene.add(this.playercube);
+
+        const size = new CANNON.Vec3(0.5, 0.5, 0.5);
+        this.playerbody = new CANNON.Body({
+            mass: 5,
+            shape: new CANNON.Box(size),
+        });
+        this.playerbody.position.set(2, 1, 0);
+        this.world.addBody(this.playerbody);
+    }
+
+    getPosition() {
+        return this.playercube.position;
+    }
+}
+
 // Three.js
 
 const scene = new THREE.Scene();
@@ -157,20 +183,31 @@ function updateCamera() {
     camera.rotation.y = rotation.y;
 }
 
+
+// TODO: Update the physics to any new potential errors in future. May have to code in gravity manually.
 sphereBody.addEventListener('collide', (event) => {
     console.log("Collision detected with:", event.body);
-    sphereBody.velocity.set(0, 0, 0);
-    sphereBody.angularVelocity.set(0, 0, 0);
+    sphereBody.velocity.set(0, -1, 0);
+    sphereBody.angularVelocity.set(0, -1, 0);
     sphereBody.sleep();
-})
+    // Wake up the sphere after 1 second
+    setTimeout(() => {
+        sphereBody.wakeUp();
+        console.log("Sphere body woke up after 1 second");
+    }, 1000); // 1000 milliseconds = 1 second
+});
+
+const player = new Player(scene, world);
 
 function animate() {
     requestAnimationFrame(animate);
     updateCamera();
     world.fixedStep();
+    player.playercube.position.copy(player.playerbody.position);
     testSphere.position.copy(sphereBody.position);
     // testCube.position.copy(cubeBody.position);
     cube.position.copy(cubeBody2.position);
+    sphereBody.sleep();
     renderer.render(scene, camera);
 }
 
