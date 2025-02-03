@@ -81,11 +81,11 @@ let sensitivity = 0.002;
 // testCube.position.set(0, 10, 0);
 // scene.add(testCube);
 
-const testSphereGeom = new THREE.SphereGeometry(1);
-const testSphereMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-const testSphere = new THREE.Mesh(testSphereGeom, testSphereMat);
-testSphere.position.set(0, 10, 0);
-scene.add(testSphere);
+const testCubeGeom = new THREE.BoxGeometry(1, 1, 1);
+const testCubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+const testCube = new THREE.Mesh(testCubeGeom, testCubeMat);
+testCube.position.set(0, 10, 0);
+scene.add(testCube);
 
 // const wallGeom = new THREE.BoxGeometry(5, 5, 1);
 // const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
@@ -97,21 +97,18 @@ const world = new CANNON.World({
     gravity: new CANNON.Vec3(0, -9.81, 0),
 });
 
+world.broadphase = new CANNON.SAPBroadphase(world); // More efficient than NaïveBroadphase
+world.allowSleep = true; // Allows sleeping to prevent unnecessary calculations
+
 const radius = 0.5;
 const halfExtents = new CANNON.Vec3(radius, radius, radius);
-// const cubeBody = new CANNON.Body({
-//     mass: 5,
-//     shape: new CANNON.Box(halfExtents),
-// });
-// cubeBody.position.set(0, 10, 0);
-// world.addBody(cubeBody);
 
-const sphereBody = new CANNON.Body({
-    mass: 10,
-    shape: new CANNON.Sphere(1),
+const cubeBody = new CANNON.Body({
+    mass: 5,
+    shape: new CANNON.Box(halfExtents),
 })
-sphereBody.position.set(0, 10, 0);
-world.addBody(sphereBody);
+cubeBody.position.set(0, 10, 0);
+world.addBody(cubeBody);
 
 const cubeBody2 = new CANNON.Body({
     mass: 0,
@@ -185,17 +182,46 @@ function updateCamera() {
 
 
 // TODO: Update the physics to any new potential errors in future. May have to code in gravity manually.
-sphereBody.addEventListener('collide', (event) => {
-    console.log("Collision detected with:", event.body);
-    sphereBody.velocity.set(0, -1, 0);
-    sphereBody.angularVelocity.set(0, -1, 0);
-    sphereBody.sleep();
-    // Wake up the sphere after 1 second
-    setTimeout(() => {
-        sphereBody.wakeUp();
-        console.log("Sphere body woke up after 1 second");
-    }, 1000); // 1000 milliseconds = 1 second
-});
+
+// cubeBody.addEventListener('collide', (event) => {
+//     console.log("Collision detected with:", event.body);
+//     cubeBody.velocity.set(0, 0, 0);
+//     cubeBody.angularVelocity.set(0, 0, 0);
+//     cubeBody.sleep();
+//     // Wake up the sphere after 1 second
+//     setTimeout(() => {
+//         cubeBody.wakeUp();
+//         console.log("Sphere body woke up after 1 second");
+//     }, 1000); // 1000 milliseconds = 1 second
+// });
+
+// Fix to to-do above. Needs more testing.
+// TODO: Add a position checker to make sure object is not inside another object to prevent slight bouncing.
+
+
+
+function checkcollide() {
+    let isColliding = false;
+
+    world.contacts.forEach((contact) => {
+        if (contact.bi === cubeBody || contact.bj === cubeBody) {
+            isColliding = true;
+        }
+    });
+
+    console.log(isColliding);
+
+    if (isColliding) {
+        // cubeBody.position.set(cubeBody.position.x, Math.ceil(cubeBody.position.y), cubeBody.position.z);
+        cubeBody.velocity.set(0, 0, 0);
+        cubeBody.angularVelocity.set(0, 0, 0);
+        cubeBody.sleep();
+    } else {
+        if (cubeBody.sleepState === CANNON.Body.SLEEPING) {
+            cubeBody.wakeUp();
+        }
+    }
+}
 
 const player = new Player(scene, world);
 
@@ -203,11 +229,10 @@ function animate() {
     requestAnimationFrame(animate);
     updateCamera();
     world.fixedStep();
+    checkcollide();
     player.playercube.position.copy(player.playerbody.position);
-    testSphere.position.copy(sphereBody.position);
-    // testCube.position.copy(cubeBody.position);
+    testCube.position.copy(cubeBody.position);
     cube.position.copy(cubeBody2.position);
-    sphereBody.sleep();
     renderer.render(scene, camera);
 }
 
