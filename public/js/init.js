@@ -199,7 +199,6 @@ function animate() {
     requestAnimationFrame(animate);
     updateCamera();
     world.fixedStep();
-    checkcollide();
     player.playercube.position.copy(player.playerbody.position);
     testCube.position.copy(cubeBody.position);
     cube.position.copy(cubeBody2.position);
