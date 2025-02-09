@@ -5,12 +5,12 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { dirname } from 'path';
-import { perlinNoise2D } from "./PerlinNoise.js";
+import { perlinNoise2DNorm } from "./PerlinNoise.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-console.log("ken: ", perlinNoise2D(13.3, 31));
+console.log("ken: ", perlinNoise2DNorm(13.3, 31));
 
 const DNC = {
 	CHUNK_SIZE: 16,
