@@ -5,9 +5,12 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { dirname } from 'path';
+import { perlinNoise2D } from "./PerlinNoise.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+console.log("ken: ", perlinNoise2D(13.3, 31));
 
 const DNC = {
 	CHUNK_SIZE: 16,
@@ -51,16 +54,16 @@ class Chunk {
 	static _SIZE_CUBED = DNC.CHUNK_SIZE ** 3;
 
 	constructor(x, y) {
-		this._chunk = new Array(this._SIZE_CUBED).fill(0);
+		this._chunk = new Array(Chunk._SIZE_CUBED).fill(0);
 	}
 
 	at(x, y, z) {
 		// TODO: general bounds checking private method.
-		return this._chunk[x + y * DNC.CHUNK_SIZE + z * this._SIZE_SQUARED];
+		return this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED];
 	}
 
 	set(block, x, y, z) {
-		this._chunk[x + y * DNC.CHUNK_SIZE + z * this._SIZE_SQUARED] = block;
+		this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED] = block;
 	}
 }
 
