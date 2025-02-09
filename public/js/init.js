@@ -5,7 +5,10 @@ import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
 console.log("Working in public");
 
 const JUMP_FORCE = 5; // Velocity applied on jump
-const SPEED = 17; // Velocity applied on WASD movement
+const SPEED = 4; // Velocity applied on WASD movement
+
+// Player class
+// TO-DO: Edit to fit more in line with OOP principles
 
 export class Player
 {
@@ -17,7 +20,7 @@ export class Player
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
         this.playercube = new THREE.Mesh(geometry, material);
-        this.playercube.position.set(2, 1, 0);
+        this.playercube.position.set(2, 3, 0);
         this.scene.add(this.playercube);
 
         const size = new CANNON.Vec3(0.5, 0.5, 0.5);
@@ -25,7 +28,7 @@ export class Player
             mass: 5,
             shape: new CANNON.Box(size),
         });
-        this.playerbody.position.set(2, 1, 0);
+        this.playerbody.position.set(2, 3, 0);
         this.world.addBody(this.playerbody);
     }
 
@@ -34,18 +37,32 @@ export class Player
     }
 }
 
-// Three.js
+// Three scene and isometric camera
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 5, 10);
+
+
+// Isometric camera
+
+const aspect = window.innerWidth / window.innerHeight;
+const zoom = 10;
+const camera = new THREE.OrthographicCamera(
+    -zoom * aspect, 
+    zoom * aspect, 
+    zoom, 
+    -zoom, 
+    0.1, 1000,
+);
+camera.position.set(20, 20, 20);
+camera.lookAt(new THREE.Vector3(0,0,0));
+scene.add(camera);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-const geometry = new THREE.BoxGeometry(1, 1, 1);
+const geometry = new THREE.BoxGeometry(16, 1, 16);
 const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(geometry, material);
 cube.castShadow = true;
@@ -89,6 +106,7 @@ world.allowSleep = true;
 
 const radius = 0.5;
 const halfExtents = new CANNON.Vec3(radius, radius, radius);
+const halfExtents2 = new CANNON.Vec3(8, 0.5, 8);
 
 const cubeBody = new CANNON.Body({
     mass: 5,
@@ -102,9 +120,10 @@ cubeBody.updateMassProperties();
 
 const cubeBody2 = new CANNON.Body({
     mass: 0,
-    shape: new CANNON.Box(halfExtents),
+    shape: new CANNON.Box(halfExtents2),
 })
 cubeBody2.position.set(0, 0.5, 0);
+cubeBody2.type = CANNON.Body.STATIC;
 world.addBody(cubeBody2);
 
 const groundBody = new CANNON.Body({
@@ -119,7 +138,7 @@ const playerMaterial = new CANNON.Material("playerMaterial");
 const voxelMaterial = new CANNON.Material("voxelMaterial");
 
 const contactMaterial = new CANNON.ContactMaterial(playerMaterial, voxelMaterial , {
-    friction: 0.55,
+    friction: 0.0,
     restitution: 0.0,
     contactEquationStiffness: 1e8,
     contactEquationRelaxation: 4,
@@ -193,36 +212,42 @@ groundBody.material = voxelMaterial;
 player.playerbody.fixedRotation = true;
 player.playerbody.updateMassProperties();
 
-player.playerbody.addEventListener("collide", (e) => {
-    if(e.body == groundBody) {
-        console.log("player is on ground");
-        player.onGround = true;
-    }
-});
+// player.playerbody.addEventListener("collide", (e) => {
+//     if(e.body == groundBody) {
+//         console.log("player is on ground");
+//         player.onGround = true;
+//     }
+// });
+
+function checkGrounded(player) {
+    if(player.playerbody.velocity.y < 0.05 && player.playerbody.velocity.y >= 0) { console.log("yep"); player.onGround = true; }
+    else { player.onGround = false; }
+}
 
 function updatePlayer(player) {
     const currentY = player.playerbody.velocity.y;
 
-    if (move.forward) {
-        player.playerbody.velocity.z = -SPEED;
-    } else if (move.backward) {
-        player.playerbody.velocity.z = SPEED;
-    } else {
-        player.playerbody.velocity.z = 0;
-    }
-    
-    if (move.right) {
-        player.playerbody.velocity.x = SPEED;
-    } else if (move.left) {
-        player.playerbody.velocity.x = -SPEED;
-    } else {
-        player.playerbody.velocity.x = 0;
+    let velx = 0;
+    let velz = 0;
+    if(move.forward) { velz -= SPEED; }
+    if(move.backward) { velz += SPEED; }
+    if(move.right) { velx += SPEED; }
+    if(move.left) { velx -= SPEED; }
+
+    const mag = Math.sqrt(velx * velx + velz * velz);
+    if(mag > SPEED) {
+        velx = (velx / mag) * SPEED;
+        velz = (velz / mag) * SPEED;
     }
 
-    if (move.jump && player.onGround) {
+    player.playerbody.velocity.x = velx;
+    player.playerbody.velocity.z = velz;
+
+    if(move.jump && player.onGround) {
         player.playerbody.velocity.y = JUMP_FORCE;
         player.onGround = false;  
-    } else {
+    } 
+    else {
         player.playerbody.velocity.y = currentY;
     }
 }
@@ -230,6 +255,7 @@ function updatePlayer(player) {
 function animate() {
     requestAnimationFrame(animate);
     // updateCamera();
+    checkGrounded(player, world);
     updatePlayer(player);
     world.fixedStep();
     player.playercube.position.copy(player.playerbody.position);
