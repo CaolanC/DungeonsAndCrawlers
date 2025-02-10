@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import { dirname } from 'path';
 import { perlinNoise2DNorm } from "./PerlinNoise.js";
+import { WebSocketServer } from "ws";
+import { createServer } from "http";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -70,6 +72,7 @@ class ChunkManager {
 
     constructor(render_distance=DNC.RENDER_DISTANCE) {
         this.render_distance = render_distance;
+        this.loaded_chunks = new Set();
     }
     
     getValidChunks(position) {
@@ -92,12 +95,18 @@ class ChunkManager {
 
     return nearbyChunks;
     }
+
+
 }
 
 class World {
 	constructor(seed) {
 		this.seed = seed;
 	}
+
+
+
+    // TODO: Load generated chunks if they exist -> otherwise generate them. a set of the string x,y,z ?
 }
 
 // TODO: During registration time, we need to create a map for unique ID's of blocks for the server's use, to a way for clients and users to identify blocks "DNC:stone" for example is mapped to an abstract id decided by the system
@@ -200,7 +209,7 @@ export class Server {
 
         this.initApp();
         this.gameLoop();
-        this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log(`PORT: ${this.port}`);
         });
     }
@@ -254,10 +263,11 @@ export class Server {
             res.send('Bad page');
         });
 
-        const socket = new WebSocket("ws://localhost:24011");
+        this.server = createServer(this.app);
+        this.websocket_server = new WebSocketServer({ server: this.server });
 
-        socket.addEventListener("open", () => {
-            console.log("Established websocket connection");
+        this.websocket_server.on("connection", (ws) => {
+            console.log("Client connected to websocket");
         });
     }
 
