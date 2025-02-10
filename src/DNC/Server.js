@@ -8,6 +8,9 @@ import { dirname } from 'path';
 import { perlinNoise2DNorm } from "./PerlinNoise.js";
 import { WebSocketServer } from "ws";
 import { createServer } from "http";
+import { PlayerManager } from "./PlayerManager.js";
+import { ChunkManager } from "./ChunkManager.js";
+import { BiomeRegistry } from "./BiomeRegistry.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -68,37 +71,6 @@ class Chunk {
 	}
 }
 
-class ChunkManager { 
-
-    constructor(render_distance=DNC.RENDER_DISTANCE) {
-        this.render_distance = render_distance;
-        this.loaded_chunks = new Set();
-    }
-    
-    getValidChunks(position) {
-        const CHUNK_SIZE = DNC.CHUNK_SIZE;
-        const render_distance = this.render_distance;
-
-        const cx = Math.floor(position.x / CHUNK_SIZE);
-        const cy = Math.floor(position.y / CHUNK_SIZE);
-        const cz = Math.floor(position.z / CHUNK_SIZE);
-
-        const nearbyChunks = [];
-
-        for (let x = cx - render_distance; x <= cx + render_distance; x++) {
-            for (let y = cy - render_distance; y <= cy + render_distance; y++) {
-                for (let z = cz - render_distance; z <= cz + render_distance; z++) {
-                    nearbyChunks.push({ x, y, z });
-                }
-            }
-        }
-
-    return nearbyChunks;
-    }
-
-
-}
-
 class World {
 	constructor(seed) {
 		this.seed = seed;
@@ -114,48 +86,10 @@ class World {
 // TODO: Expand on our blocks, refine the properties and implement a registry system for the frontend and backend as well as shared components. Add a solid block, skip direct registry for now, get them sent to our frontned.
 
 
-class BlockRegistry {
-	static defaultRegistry = new BlockRegistry();
-	static clientRegistry = new BlockRegistry();
-
-	#registerBlock(block) {
-		console.log(block.namespace + block.name);
-	}
-
-	static RegisterBlock(block) {
-		this.defaultRegistry.#registerBlock(block);
-	}
-
-	static async RegisterDefaultBlocks() {
-		DNC_Blocks.forEach((block) => {
-			console.log(block.name);
-		});
-	}
-}
-
 // TODO: Separate client and server block data
 // TODO: Implement data view to store chunk height maps in a flatbuffer. 11 bits, signed -1023-1023. Also, when it comes to chunk loading what we really need to do is ->
 // draw a cylinder around the player, start from the render distance in the sky. When a chunk is loaded work down until all the values of the height map have been used. Then fill al
 // the remaining values.
-
-class BiomeRegistry {
-	static defaultRegistry = new BiomeRegistry();
-    static biomes = new Map();
-
-	static #registerBiome(biome) { 
-        this.biomes.set(`${biome.mod_namespace}:${biome.name}`, biome);
-    }
-
-	static RegisterBiome(biome) {
-		this.#registerBiome(biome);
-	}
-
-	static async RegisterDefaultBiomes() {
-		await DNC_Biomes.forEach((biome) => {
-            this.RegisterBiome(biome);
-		});
-	}
-}
 
 class Position {
     constructor(x, y, z) {
@@ -174,28 +108,12 @@ class Player {
     }
 }
 
-class PlayerManager {
-    players = new Map();
-    constructor() {
-
-    }
-
-    addPlayer(username, player) {
-        this.players.set(username, player);
-        console.log(player.display_name);
-    }
-
-    getPlayers() {
-        return this.players;
-    }
-}
-
 export class Server {
     
     world = null;
     tick_counter = 0;
     playerManager = new PlayerManager();
-    chunkManager = new ChunkManager();
+    chunkManager = new ChunkManager(DNC.RENDER_DISTANCE);
 
     #lastFrameTime = Date.now();
 
@@ -274,14 +192,4 @@ export class Server {
 
     loadMainMenu() {
     }
-}
-main();
-async function main() {
-	let chunk = new Chunk(0, 0);
-	let block = BlockMaker.Create(DNC.NAMESPACE, DNC.BLOCK.STONE);
-	chunk.set(block, 15, 15, 15);
-	console.log(chunk.at(15, 15, 15));
-	await BlockRegistry.RegisterDefaultBlocks();
-	await BiomeRegistry.RegisterDefaultBiomes();
-    console.log(BiomeRegistry.biomes);
 }

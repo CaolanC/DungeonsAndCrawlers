@@ -1,5 +1,5 @@
 import express from 'express';
-import { Server } from './DNC/World.js';
+import { Server } from './DNC/Server.js';
 
 const app = express();
 const PORT = process.env.PORT || 5173;
