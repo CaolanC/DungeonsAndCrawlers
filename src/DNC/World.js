@@ -5,10 +5,13 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { dirname } from 'path';
-import { WebSocket } from "ws";
+import { perlinNoise2DNorm } from "./PerlinNoise.js";
+import { WebSocketServer } from "ws";
+import { createServer } from "http";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
 
 const DNC = {
 	CHUNK_SIZE: 16,
@@ -52,16 +55,16 @@ class Chunk {
 	static _SIZE_CUBED = DNC.CHUNK_SIZE ** 3;
 
 	constructor(x, y) {
-		this._chunk = new Array(this._SIZE_CUBED).fill(0);
+		this._chunk = new Array(Chunk._SIZE_CUBED).fill(0);
 	}
 
 	at(x, y, z) {
 		// TODO: general bounds checking private method.
-		return this._chunk[x + y * DNC.CHUNK_SIZE + z * this._SIZE_SQUARED];
+		return this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED];
 	}
 
 	set(block, x, y, z) {
-		this._chunk[x + y * DNC.CHUNK_SIZE + z * this._SIZE_SQUARED] = block;
+		this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED] = block;
 	}
 }
 
@@ -69,6 +72,7 @@ class ChunkManager {
 
     constructor(render_distance=DNC.RENDER_DISTANCE) {
         this.render_distance = render_distance;
+        this.loaded_chunks = new Set();
     }
     
     getValidChunks(position) {
@@ -91,12 +95,18 @@ class ChunkManager {
 
     return nearbyChunks;
     }
+
+
 }
 
 class World {
 	constructor(seed) {
 		this.seed = seed;
 	}
+
+
+
+    // TODO: Load generated chunks if they exist -> otherwise generate them. a set of the string x,y,z ?
 }
 
 // TODO: During registration time, we need to create a map for unique ID's of blocks for the server's use, to a way for clients and users to identify blocks "DNC:stone" for example is mapped to an abstract id decided by the system
@@ -130,16 +140,19 @@ class BlockRegistry {
 
 class BiomeRegistry {
 	static defaultRegistry = new BiomeRegistry();
+    static biomes = new Map();
 
-	#registerBiome(biome) { }
+	static #registerBiome(biome) { 
+        this.biomes.set(`${biome.mod_namespace}:${biome.name}`, biome);
+    }
 
 	static RegisterBiome(biome) {
-		this.defaultRegistry.#registerBiome(biome);
+		this.#registerBiome(biome);
 	}
 
 	static async RegisterDefaultBiomes() {
 		await DNC_Biomes.forEach((biome) => {
-			console.log(biome);
+            this.RegisterBiome(biome);
 		});
 	}
 }
@@ -196,7 +209,7 @@ export class Server {
 
         this.initApp();
         this.gameLoop();
-        this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log(`PORT: ${this.port}`);
         });
     }
@@ -215,7 +228,7 @@ export class Server {
             this.#lastFrameTime = now;
             this.playerManager.getPlayers().forEach((player, key) => {
                 //EntityPhysicsManager.updatePlayerPhysics(player);
-                console.log(this.chunkManager.getValidChunks(player.position));
+                //console.log(this.chunkManager.getValidChunks(player.position));
             });
             // Game state calls and such
         }
@@ -250,18 +263,19 @@ export class Server {
             res.send('Bad page');
         });
 
-        // const socket = new WebSocket("ws://localhost:24011");
+        this.server = createServer(this.app);
+        this.websocket_server = new WebSocketServer({ server: this.server });
 
-        // socket.addEventListener("open", () => {
-        //     console.log("Established websocket connection");
-        // });
+        this.websocket_server.on("connection", (ws) => {
+            console.log("Client connected to websocket");
+        });
     }
 
 
     loadMainMenu() {
     }
 }
-
+main();
 async function main() {
 	let chunk = new Chunk(0, 0);
 	let block = BlockMaker.Create(DNC.NAMESPACE, DNC.BLOCK.STONE);
@@ -269,4 +283,5 @@ async function main() {
 	console.log(chunk.at(15, 15, 15));
 	await BlockRegistry.RegisterDefaultBlocks();
 	await BiomeRegistry.RegisterDefaultBiomes();
+    console.log(BiomeRegistry.biomes);
 }
