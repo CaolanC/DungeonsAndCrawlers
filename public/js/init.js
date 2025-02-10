@@ -37,6 +37,15 @@ export class Player
     }
 }
 
+class Game
+{
+    constructor() {
+
+    }
+
+
+};
+
 // Three scene and isometric camera
 
 const scene = new THREE.Scene();
