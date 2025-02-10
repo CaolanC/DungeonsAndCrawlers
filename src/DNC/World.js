@@ -5,6 +5,7 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { dirname } from 'path';
+import { WebSocket } from "ws";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -249,11 +250,11 @@ export class Server {
             res.send('Bad page');
         });
 
-        const socket = new WebSocket("ws://localhost:24011");
+        // const socket = new WebSocket("ws://localhost:24011");
 
-        socket.addEventListener("open", () => {
-            console.log("Established websocket connection");
-        });
+        // socket.addEventListener("open", () => {
+        //     console.log("Established websocket connection");
+        // });
     }
 
 
