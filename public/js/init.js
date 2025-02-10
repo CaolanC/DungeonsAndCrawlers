@@ -212,13 +212,6 @@ groundBody.material = voxelMaterial;
 player.playerbody.fixedRotation = true;
 player.playerbody.updateMassProperties();
 
-// player.playerbody.addEventListener("collide", (e) => {
-//     if(e.body == groundBody) {
-//         console.log("player is on ground");
-//         player.onGround = true;
-//     }
-// });
-
 function checkGrounded(player) {
     if(player.playerbody.velocity.y < 0.05 && player.playerbody.velocity.y >= 0) { console.log("yep"); player.onGround = true; }
     else { player.onGround = false; }
@@ -252,9 +245,15 @@ function updatePlayer(player) {
     }
 }
 
+function updateCamera() {
+    const pos = new THREE.Vector3(20,20,20);
+    camera.position.copy(player.playercube.position).add(pos);
+    camera.lookAt(player.playercube.position);
+}
+
 function animate() {
     requestAnimationFrame(animate);
-    // updateCamera();
+    updateCamera();
     checkGrounded(player, world);
     updatePlayer(player);
     world.fixedStep();
