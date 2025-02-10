@@ -10,7 +10,6 @@ import { perlinNoise2DNorm } from "./PerlinNoise.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-console.log("ken: ", perlinNoise2DNorm(13.3, 31));
 
 const DNC = {
 	CHUNK_SIZE: 16,
@@ -220,7 +219,7 @@ export class Server {
             this.#lastFrameTime = now;
             this.playerManager.getPlayers().forEach((player, key) => {
                 //EntityPhysicsManager.updatePlayerPhysics(player);
-                console.log(this.chunkManager.getValidChunks(player.position));
+                //console.log(this.chunkManager.getValidChunks(player.position));
             });
             // Game state calls and such
         }
