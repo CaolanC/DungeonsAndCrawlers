@@ -1,6 +1,8 @@
 //import * as THREE from 'three';
 
 import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
+import { Camera } from "./Camera.js";
+import { CameraManager } from "./CameraManager.js";
 
 console.log("Working in public");
 
@@ -40,22 +42,6 @@ export class PlayerEntity
 // Three scene and isometric camera
 
 const scene = new THREE.Scene();
-
-// Isometric camera
-
-const aspect = window.innerWidth / window.innerHeight;
-const zoom = 10;
-const camera = new THREE.OrthographicCamera(
-    -zoom * aspect, 
-    zoom * aspect, 
-    zoom, 
-    -zoom, 
-    0.1, 1000,
-);
-const offset = new THREE.Vector3(20,20,20);
-camera.position.set(20, 20, 20);
-camera.lookAt(new THREE.Vector3(0,0,0));
-scene.add(camera);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -140,6 +126,17 @@ const contactMaterial = new CANNON.ContactMaterial(playerMaterial, voxelMaterial
 });
 world.addContactMaterial(contactMaterial);
 
+const player = new PlayerEntity(scene, world);
+const offset = new THREE.Vector3(20,20,20);
+const camera = new Camera(scene, 10, (window.innerWidth / window.innerHeight));
+const cameraControl = new CameraManager(camera, player, offset);
+
+player.playerbody.material = playerMaterial;
+groundBody.material = voxelMaterial;
+cubeBody2.material = voxelMaterial;
+player.playerbody.fixedRotation = true;
+player.playerbody.updateMassProperties();
+
 // Functions and event listeners
 
 document.body.addEventListener('click', () => document.body.requestPointerLock());
@@ -149,10 +146,6 @@ const speed = 0.2;
 let rotation = { x: 0, y: 0 };
 let sensitivity = 0.002;
 
-let targetOffset = offset.clone();  // Store the camera's target offset
-let isRotating = false;  
-const rotationSpeed = 0.1; 
-
 document.addEventListener('keydown', (e) => {
     switch (e.key) {
         case 'w': move.forward = true; break;
@@ -161,14 +154,14 @@ document.addEventListener('keydown', (e) => {
         case 'd': move.right = true; break; 
         case ' ': move.jump = true; break;
         case 'ArrowLeft': 
-            if (isRotating) { break; }
-            targetOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2); // rotates camera left by 90 degrees
-            isRotating = true;
+            if (cameraControl.getRotating()) { break; }
+            cameraControl.setTargetOffset(new THREE.Vector3(0, 1, 0), Math.PI / 2); // rotates camera left by 90 degrees
+            cameraControl.setIsRotating(true);
             break;
         case 'ArrowRight': 
-            if (isRotating) { break; } 
-            targetOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2); // rotates camera right by 90 degrees
-            isRotating = true;
+            if (cameraControl.getRotating()) { break; } 
+            cameraControl.setTargetOffset(new THREE.Vector3(0, 1, 0), -Math.PI / 2); // rotates camera right by 90 degrees
+            cameraControl.setIsRotating(true);
             break;
     }
 });
@@ -198,21 +191,12 @@ function checkGrounded(player) {
     else { player.onGround = false; }
 }
 
-// Gets vertical and horizontal directions relative to the camera
-
-function getDirection(camera) {
-    const vert = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).setY(0).normalize();
-    const hori = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).setY(0).normalize();
-
-    return { vert, hori };
-}
-
 // Updates the player's velocity based on input
 
 function updatePlayer(player) {
     const currentY = player.playerbody.velocity.y;
 
-    const { vert, hori } = getDirection(camera);
+    const { vert, hori } = camera.getDirection();
 
     // let velx = 0;
     // let velz = 0;
@@ -244,32 +228,6 @@ function updatePlayer(player) {
     }
 }
 
-// Updates the camera position
-
-function updateCamera() {
-
-    // Smoothly interpolate offset towards targetOffset
-    offset.lerp(targetOffset, rotationSpeed);
-
-    // Stop rotating when close enough to the target offset
-    if (offset.distanceTo(targetOffset) < 0.1) {
-        offset.copy(targetOffset);
-        isRotating = false; 
-    }
-
-    camera.position.copy(player.playercube.position).add(offset);
-    camera.lookAt(player.playercube.position);
-}
-
-// Loading in player object and configuring materials
-
-const player = new PlayerEntity(scene, world);
-player.playerbody.material = playerMaterial;
-groundBody.material = voxelMaterial;
-cubeBody2.material = voxelMaterial;
-player.playerbody.fixedRotation = true;
-player.playerbody.updateMassProperties();
-
 // Animate function, renders environment and physics world and calls functions each frame
 
 function animate() {
@@ -279,8 +237,8 @@ function animate() {
     world.fixedStep();
     player.playercube.position.copy(player.playerbody.position);
     cube.position.copy(cubeBody2.position);
-    updateCamera();
-    renderer.render(scene, camera);
+    cameraControl.update();
+    renderer.render(scene, camera.camera);
 }
 
 function websocketConnect() {
