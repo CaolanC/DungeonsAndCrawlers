@@ -1,6 +1,8 @@
 //import * as THREE from 'three';
 
 import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
+import { Camera } from "./Camera.js";
+import { CameraManager } from "./CameraManager.js";
 
 console.log("Working in public");
 
@@ -10,7 +12,7 @@ const SPEED = 4; // Velocity applied on WASD movement
 // Player class
 // TO-DO: Edit to fit more in line with OOP principles
 
-export class Player
+export class PlayerEntity
 {
     constructor(scene, world){ // scene and world of threejs render
         this.scene = scene;
@@ -49,26 +51,12 @@ class GameLoop
 
 const scene = new THREE.Scene();
 
-
-// Isometric camera
-
-const aspect = window.innerWidth / window.innerHeight;
-const zoom = 10;
-const camera = new THREE.OrthographicCamera(
-    -zoom * aspect, 
-    zoom * aspect, 
-    zoom, 
-    -zoom, 
-    0.1, 1000,
-);
-camera.position.set(20, 20, 20);
-camera.lookAt(new THREE.Vector3(0,0,0));
-scene.add(camera);
-
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
+
+// Test ground cube
 
 const geometry = new THREE.BoxGeometry(16, 1, 16);
 const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
@@ -78,12 +66,16 @@ cube.receiveShadow = true;
 cube.position.set(0, 0.5, 0);
 scene.add(cube);
 
+// Test ground plane
+
 const groundGeometry = new THREE.PlaneGeometry(50, 50);
 const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
+
+// Lighting
 
 const sun = new THREE.DirectionalLight(0xffffff, 1);
 sun.position.set(10, 20, 10);
@@ -99,32 +91,17 @@ scene.add(ambientLight);
 
 // Cannon-es.js
 
-const testCubeGeom = new THREE.BoxGeometry(1, 1, 1);
-const testCubeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-const testCube = new THREE.Mesh(testCubeGeom, testCubeMat);
-testCube.position.set(0, 3, 0);
-scene.add(testCube);
-
 const world = new CANNON.World({
     gravity: new CANNON.Vec3(0, -9.5, 0),
 });
 
 world.broadphase = new CANNON.SAPBroadphase(world); 
-world.allowSleep = true; 
+world.allowSleep = false;
 
 const radius = 0.5;
-const halfExtents = new CANNON.Vec3(radius, radius, radius);
-const halfExtents2 = new CANNON.Vec3(8, 0.5, 8);
+const halfExtents2 = new CANNON.Vec3(8, radius, 8);
 
-const cubeBody = new CANNON.Body({
-    mass: 5,
-    shape: new CANNON.Box(halfExtents),
-})
-cubeBody.position.set(0, 3, 0);
-world.addBody(cubeBody);
-
-cubeBody.fixedRotation = true;
-cubeBody.updateMassProperties();
+// Test cube ground body
 
 const cubeBody2 = new CANNON.Body({
     mass: 0,
@@ -134,6 +111,8 @@ cubeBody2.position.set(0, 0.5, 0);
 cubeBody2.type = CANNON.Body.STATIC;
 world.addBody(cubeBody2);
 
+// Test ground body
+
 const groundBody = new CANNON.Body({
     mass: 0,
     type: CANNON.Body.STATIC,
@@ -141,6 +120,8 @@ const groundBody = new CANNON.Body({
 })
 groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 world.addBody(groundBody);
+
+// Contact material for player (playerMaterial) and terrain (voxelMaterial)
 
 const playerMaterial = new CANNON.Material("playerMaterial");
 const voxelMaterial = new CANNON.Material("voxelMaterial");
@@ -153,8 +134,18 @@ const contactMaterial = new CANNON.ContactMaterial(playerMaterial, voxelMaterial
 });
 world.addContactMaterial(contactMaterial);
 
-cubeBody.material = playerMaterial;
+const player = new PlayerEntity(scene, world);
+const offset = new THREE.Vector3(20,20,20);
+const camera = new Camera(scene, 10, (window.innerWidth / window.innerHeight));
+const cameraControl = new CameraManager(camera, player, offset);
+
+player.playerbody.material = playerMaterial;
+groundBody.material = voxelMaterial;
 cubeBody2.material = voxelMaterial;
+player.playerbody.fixedRotation = true;
+player.playerbody.updateMassProperties();
+
+// Functions and event listeners
 
 document.body.addEventListener('click', () => document.body.requestPointerLock());
 
@@ -168,8 +159,18 @@ document.addEventListener('keydown', (e) => {
         case 'w': move.forward = true; break;
         case 's': move.backward = true; break;
         case 'a': move.left = true; break;
-        case 'd': move.right = true; break;
+        case 'd': move.right = true; break; 
         case ' ': move.jump = true; break;
+        case 'ArrowLeft': 
+            if (cameraControl.getRotating()) { break; }
+            cameraControl.setTargetOffset(new THREE.Vector3(0, 1, 0), Math.PI / 2); // rotates camera left by 90 degrees
+            cameraControl.setIsRotating(true);
+            break;
+        case 'ArrowRight': 
+            if (cameraControl.getRotating()) { break; } 
+            cameraControl.setTargetOffset(new THREE.Vector3(0, 1, 0), -Math.PI / 2); // rotates camera right by 90 degrees
+            cameraControl.setIsRotating(true);
+            break;
     }
 });
 
@@ -191,58 +192,40 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
-// function updateCamera() {
-//     const direction = new THREE.Vector3();
-//     const right = new THREE.Vector3();
-//     const up = new THREE.Vector3(0, 1, 0);
-
-//     camera.getWorldDirection(direction);
-//     direction.cross(up).normalize();
-
-//     const moveVector = new THREE.Vector3();
-//     if (move.forward) moveVector.add(camera.getWorldDirection(new THREE.Vector3()).normalize());
-//     if (move.backward) moveVector.add(camera.getWorldDirection(new THREE.Vector3()).normalize().negate());
-//     if (move.left) moveVector.add(direction.negate());
-//     if (move.right) moveVector.add(direction.negate().negate());
-//     if (move.up) moveVector.y += 1;
-//     if (move.down) moveVector.y -= 1;
-
-//     moveVector.normalize().multiplyScalar(speed);
-//     camera.position.add(moveVector);
-
-//     camera.rotation.x = rotation.x;
-//     camera.rotation.y = rotation.y;
-// }
-
-const player = new Player(scene, world);
-player.playerbody.material = playerMaterial;
-groundBody.material = voxelMaterial;
-player.playerbody.fixedRotation = true;
-player.playerbody.updateMassProperties();
+// Checks the player's velocity to determine if they are on the ground, console log for debug
 
 function checkGrounded(player) {
-    if(player.playerbody.velocity.y < 0.05 && player.playerbody.velocity.y >= 0) { console.log("yep"); player.onGround = true; }
+    if(player.playerbody.velocity.y < 0.05 && player.playerbody.velocity.y >= 0) { console.log("On ground"); player.onGround = true; }
     else { player.onGround = false; }
 }
+
+// Updates the player's velocity based on input
 
 function updatePlayer(player) {
     const currentY = player.playerbody.velocity.y;
 
-    let velx = 0;
-    let velz = 0;
-    if(move.forward) { velz -= SPEED; }
-    if(move.backward) { velz += SPEED; }
-    if(move.right) { velx += SPEED; }
-    if(move.left) { velx -= SPEED; }
+    const { vert, hori } = camera.getDirection();
 
-    const mag = Math.sqrt(velx * velx + velz * velz);
-    if(mag > SPEED) {
-        velx = (velx / mag) * SPEED;
-        velz = (velz / mag) * SPEED;
+    // let velx = 0;
+    // let velz = 0;
+    let movement = new THREE.Vector3();
+    if(move.forward) { movement.add(vert); }
+    if(move.backward) { movement.sub(vert); }
+    if(move.right) { movement.add(hori); }
+    if(move.left) { movement.sub(hori); }
+
+    // const mag = Math.sqrt(velx * velx + velz * velz);
+    // if(mag > SPEED) {
+    //     velx = (velx / mag) * SPEED;
+    //     velz = (velz / mag) * SPEED;
+    // }
+
+    if (movement.length() > 0) {
+        movement.normalize().multiplyScalar(SPEED);
     }
 
-    player.playerbody.velocity.x = velx;
-    player.playerbody.velocity.z = velz;
+    player.playerbody.velocity.x = movement.x;
+    player.playerbody.velocity.z = movement.z;
 
     if(move.jump && player.onGround) {
         player.playerbody.velocity.y = JUMP_FORCE;
@@ -253,22 +236,17 @@ function updatePlayer(player) {
     }
 }
 
-function updateCamera() {
-    const pos = new THREE.Vector3(20,20,20);
-    camera.position.copy(player.playercube.position).add(pos);
-    camera.lookAt(player.playercube.position);
-}
+// Animate function, renders environment and physics world and calls functions each frame
 
 function animate() {
     requestAnimationFrame(animate);
-    updateCamera();
     checkGrounded(player, world);
     updatePlayer(player);
     world.fixedStep();
     player.playercube.position.copy(player.playerbody.position);
-    testCube.position.copy(cubeBody.position);
     cube.position.copy(cubeBody2.position);
-    renderer.render(scene, camera);
+    cameraControl.update();
+    renderer.render(scene, camera.camera);
 }
 
 function websocketConnect() {
