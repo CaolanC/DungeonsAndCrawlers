@@ -12,24 +12,12 @@ import { PlayerManager } from "./PlayerManager.js";
 import { ChunkManager } from "./ChunkManager.js";
 import { BiomeRegistry } from "./BiomeRegistry.js";
 import { Player } from "./Player.js";
+import { Chunk } from "./Chunk.js";
+import { DNC } from "./Config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-
-const DNC = {
-	CHUNK_SIZE: 16,
-	NAMESPACE: 255,
-	BLOCK: {
-		AIR: 0, // Air is kind of special in that we can use it's state and reserved bits for maybe adding extra information. We could encode air pressure, our fluid dynamics
-		// into the block itself. TODO: Consider adding metadata to air with the extra bits.
-		STONE: 1,
-	},
-    FRAMERATE: 10,
-    RENDER_DISTANCE: 8
-};
-
-DNC.FRAME_DURATION = 1000 / DNC.FRAMERATE;
 
 /**
  * Block bit layout (32 bits total):
@@ -53,32 +41,10 @@ class BlockMaker {
 	// TODO: Add a decoder, and maybe a map to string names.
 }
 
-class Chunk {
-	static _SIZE_SQUARED = DNC.CHUNK_SIZE ** 2; // Caching these because the amount omoun of blocks that need to be generated could be astounding. Removing operations without adding
-	// complexity could save use headaches down the line.
-	static _SIZE_CUBED = DNC.CHUNK_SIZE ** 3;
-
-	constructor(x, y) {
-		this._chunk = new Array(Chunk._SIZE_CUBED).fill(0);
-	}
-
-	at(x, y, z) {
-		// TODO: general bounds checking private method.
-		return this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED];
-	}
-
-	set(block, x, y, z) {
-		this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED] = block;
-	}
-}
-
 class World {
 	constructor(seed) {
 		this.seed = seed;
 	}
-
-
-
     // TODO: Load generated chunks if they exist -> otherwise generate them. a set of the string x,y,z ?
 }
 
@@ -148,6 +114,7 @@ export class Server {
 
     updatePlayers() {
         this.playerManager.getPlayers().forEach((player, key) => {
+            if (!player.is_connected) return;
             //EntityPhysicsManager.updatePlayerPhysics(player);
             //console.log(this.chunkManager.getValidChunks(player.position));
             if (player.pending_position) {
@@ -155,9 +122,22 @@ export class Server {
                 //console.log(player.position);
             };
 
+            let new_chunks = this.chunkManager.getChunksToLoad(player);
+            new_chunks.forEach((chunk) => {
+                this.sendChunk(player, chunk);
+            });
+
+            player.loaded_chunks = player.loaded_chunks.union(new_chunks);
             player.pending_position = null;
         });
         // Game state calls and such
+    }
+
+    sendChunk(player, chunk) {
+        const message = { type: "new_chunk", chunk: chunk };
+        if (player.websocket_connection) {
+            player.websocket_connection.send(JSON.stringify(message));
+        }
     }
 
     initApp() {
@@ -174,7 +154,9 @@ export class Server {
             const username = req.body.username;
             const player = new Player(username, this.getDefaultSpawnPoint());
             this.playerManager.addPlayer(username, player);
-            res.redirect('/game');
+
+            // Redirect with username as url param, this is a terrible method, but it works for now until we actually plan to implement auth
+            res.redirect(`/game?username=${encodeURIComponent(username)}`);
         });
 
         this.app.get('/', (req, res) => {
@@ -195,8 +177,19 @@ export class Server {
                 try {
                     const msg = JSON.parse(data);
                     if (msg.type === "player_update") {
-                        this.handlePlayerUpdate(msg.username, msg); // Need to add a basic token to identify users, can use Oath later
+                        this.handlePlayerUpdate(msg.username, msg); //TODO: Need to add a basic token to identify users, can use Oath later
                     }
+
+                    if (msg.type === "player_connect") {
+                        console.log("A PLAYER HAS CONNECTED");
+                        const player = this.playerManager.getPlayer(msg.username);
+                        if (player) {
+                            player.websocket_connection = ws;
+                            player.is_connected = true;
+                        } else {
+                        }
+                    }
+
                 } catch (err) {
                     console.error("Bad ws:", err);
                 }
