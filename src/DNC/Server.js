@@ -11,6 +11,7 @@ import { createServer } from "http";
 import { PlayerManager } from "./PlayerManager.js";
 import { ChunkManager } from "./ChunkManager.js";
 import { BiomeRegistry } from "./BiomeRegistry.js";
+import { Player } from "./Player.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -99,15 +100,6 @@ class Position {
     }
 }   
 
-class Player {
-    
-    custom_spawnpoint = null;
-    constructor(display_name, position) {
-        this.display_name = display_name;
-        this.position = position;        
-    }
-}
-
 export class Server {
     
     world = null;
@@ -120,12 +112,15 @@ export class Server {
     constructor(app, port) {
         this.app = app;
         this.port = port;
+        this.server = createServer(this.app);
+        this.websocket_server = new WebSocketServer({ server: this.server });
     }
 
 
     start() {
 
         this.initApp();
+        this.initSockets();
         this.gameLoop();
         this.server.listen(this.port, () => {
             console.log(`PORT: ${this.port}`);
@@ -144,15 +139,24 @@ export class Server {
 
         if (deltaTime >= DNC.FRAME_DURATION) {
             this.#lastFrameTime = now;
-            this.playerManager.getPlayers().forEach((player, key) => {
-                //EntityPhysicsManager.updatePlayerPhysics(player);
-                //console.log(this.chunkManager.getValidChunks(player.position));
-            });
-            // Game state calls and such
         }
 
         this.tick_counter++; // For client syncing. We need a global tick counter so that clients only send us updates every tick, instead of wasting calls to the server.
         setTimeout(() => this.gameLoop(), Math.max(0, DNC.FRAME_DURATION - deltaTime));
+    }
+
+    updatePlayers() {
+        this.playerManager.getPlayers().forEach((player, key) => {
+            //EntityPhysicsManager.updatePlayerPhysics(player);
+            //console.log(this.chunkManager.getValidChunks(player.position));
+            if (player.pending_position) {
+                player.position = player.pending_position; // This is where we implement server-side verification and checks, for now we can let the client play god.
+                console.log(player.position);
+            };
+
+            player.pending_position = null;
+        });
+        // Game state calls and such
     }
 
     initApp() {
@@ -180,15 +184,40 @@ export class Server {
         this.app.get('*', (req, res) => {
             res.send('Bad page');
         });
-
-        this.server = createServer(this.app);
-        this.websocket_server = new WebSocketServer({ server: this.server });
+    }
+    
+    initSockets() {
 
         this.websocket_server.on("connection", (ws) => {
             console.log("Client connected to websocket");
+            ws.on("message", (data) => {
+                try {
+                    const msg = JSON.parse(data);
+                    if (msg.type === "player_update") {
+                        this.handlePlayerUpdate(msg.username, msg.payload);
+                    }
+                } catch (err) {
+                    console.error("Bad ws:", data);
+                }
+            });
+
+            //ws.send("something");
         });
     }
 
+    handlePlayerUpdate(username, payload) {
+        const player = this.playerManager.getPlayer(username);
+        if (!player) return;
+
+        const now = Date.now();
+        if (now - (player.last_update_time|| 0) < DNC.FRAME_DURATION) {
+            return; // Ignore updates that arrive too fast, because we can't ensure client side throttling is applied
+        }
+
+        player.last_update_time = now;
+
+        player.pending_position = payload.position;
+    }
 
     loadMainMenu() {
     }

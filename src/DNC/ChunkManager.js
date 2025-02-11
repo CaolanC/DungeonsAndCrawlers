@@ -4,6 +4,17 @@ export class ChunkManager {
         this.render_distance = render_distance;
         this.loaded_chunks = new Set();
     }
+
+    loadChunks(player_position) {
+        chunk_ids = getValidChunks(player_position);
+        chunk_ids.forEach((chunk_id) => {
+            
+        });
+    }
+
+    generateChunk(chunk_id) {
+
+    }
     
     getValidChunks(position) {
         const CHUNK_SIZE = DNC.CHUNK_SIZE;

@@ -37,10 +37,9 @@ export class Player
     }
 }
 
-class Game
+class GameLoop
 {
     constructor() {
-
     }
 
 
