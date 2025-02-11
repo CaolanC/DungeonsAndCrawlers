@@ -139,6 +139,7 @@ export class Server {
 
         if (deltaTime >= DNC.FRAME_DURATION) {
             this.#lastFrameTime = now;
+            this.updatePlayers();
         }
 
         this.tick_counter++; // For client syncing. We need a global tick counter so that clients only send us updates every tick, instead of wasting calls to the server.
@@ -151,7 +152,7 @@ export class Server {
             //console.log(this.chunkManager.getValidChunks(player.position));
             if (player.pending_position) {
                 player.position = player.pending_position; // This is where we implement server-side verification and checks, for now we can let the client play god.
-                console.log(player.position);
+                //console.log(player.position);
             };
 
             player.pending_position = null;
@@ -194,10 +195,10 @@ export class Server {
                 try {
                     const msg = JSON.parse(data);
                     if (msg.type === "player_update") {
-                        this.handlePlayerUpdate(msg.username, msg.payload);
+                        this.handlePlayerUpdate(msg.username, msg);
                     }
                 } catch (err) {
-                    console.error("Bad ws:", data);
+                    console.error("Bad ws:", err);
                 }
             });
 
@@ -215,7 +216,6 @@ export class Server {
         }
 
         player.last_update_time = now;
-
         player.pending_position = payload.position;
     }
 

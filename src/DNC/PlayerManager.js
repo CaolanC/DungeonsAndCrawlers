@@ -12,4 +12,8 @@ export class PlayerManager {
     getPlayers() {
         return this.players;
     }
+
+    getPlayer(username) {
+        return this.players.get(username);
+    }
 }
