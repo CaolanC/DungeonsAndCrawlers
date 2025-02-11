@@ -195,7 +195,7 @@ export class Server {
                 try {
                     const msg = JSON.parse(data);
                     if (msg.type === "player_update") {
-                        this.handlePlayerUpdate(msg.username, msg);
+                        this.handlePlayerUpdate(msg.username, msg); // Need to add a basic token to identify users, can use Oath later
                     }
                 } catch (err) {
                     console.error("Bad ws:", err);
