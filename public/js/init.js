@@ -52,10 +52,7 @@ class Game
     setup() {
         this.network_manager.on("new_chunk", (data) => {
             let chunk = Chunk.from(data.chunk);
-            if (chunk.location == "0,0,0" || chunk.location == "0,1,0") {
-                console.log(chunk);
-                this.renderChunks(chunk);
-            }
+            this.renderChunks(chunk);
             //console.log(chunk.tuple_location);
             //console.log(chunk.location);
             //console.log(chunk._chunk);
@@ -77,32 +74,41 @@ class Game
         const ypos = location[1];
         const zpos = location[2];
 
-        const geometry = new THREE.BufferGeometry();
-        const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
-        const vertices = [];
-        const indices = [];
-        let indexOffset = 0;
-        
-        for(let x = 0; x < size; x++) {
-            for(let y = 0; y < size; y++) {
-                for(let z = 0; z < size; z++) {
+        if (!this.blockGeometry) {
+            this.blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+        }
+        if (!this.blockMaterial) {
+            this.blockMaterial = new THREE.MeshBasicMaterial({ color: 0x888888, wireframe: false });
+        }
+
+        const numBlocks = size * size * size; // Maximum possible blocks
+        const instancedMesh = new THREE.InstancedMesh(this.blockGeometry, this.blockMaterial, numBlocks);
+
+        let index = 0;
+        const matrix = new THREE.Matrix4();
+
+        for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+                for (let z = 0; z < size; z++) {
                     let worldX = (xpos * size) + x;
                     let worldY = (ypos * size) + y;
                     let worldZ = (zpos * size) + z;
-                    const id = chunk.at(x, y, z);
-                    if(id == 0){
+
+                    const block_id = chunk.at(x, y, z);
+
+                    if (block_id == 1) {
+                        matrix.setPosition(worldX, worldY, worldZ);
+                        instancedMesh.setMatrixAt(index++, matrix);
                     }
                 }
             }
         }
 
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        geometry.setIndex(indices);
-        geometry.computeVertexNormals(); // For lighting
-    
-        const mesh = new THREE.Mesh(geometry, material);
-        this.scene.add(mesh);
+        // Update instance count
+        instancedMesh.count = index;
+        instancedMesh.instanceMatrix.needsUpdate = true;
 
+        this.scene.add(instancedMesh);
     }
 
     loop() {
