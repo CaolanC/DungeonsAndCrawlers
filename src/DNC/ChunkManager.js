@@ -49,9 +49,9 @@ export class ChunkManager {
                     let worldY = cy * CHUNK_SIZE + y;
 
                     if (worldY <= terrainHeight) {
-                        chunk.set(x, y, z, 1); // Solid block
+                        chunk.set(1, x, y, z); // Solid block
                     } else {
-                        chunk.set(x, y, z, 0); // Air
+                        chunk.set(0, x, y, z); // Air
                     }
                 }
             }
