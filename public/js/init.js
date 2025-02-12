@@ -1,6 +1,7 @@
 //import * as THREE from 'three';
 
 import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
+import { SceneWorld } from "./SceneWorld.js";
 import { Camera } from "./Camera.js";
 import { CameraManager } from "./CameraManager.js";
 import { ClientPlayer } from "./ClientPlayer.js";
@@ -81,111 +82,24 @@ class Game
     }
 };
 
-// Three scene and isometric camera
+// Class variables.
 
-const scene = new THREE.Scene();
+const sceneWorld = new SceneWorld(); // Sets up scene and world
+const scene = sceneWorld.getScene(); // Grabs scene, world and renderer from SceneWorld class
+const world = sceneWorld.getWorld();
+const renderer = sceneWorld.getRender();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
-
-// Test ground cube
-
-const geometry = new THREE.BoxGeometry(16, 1, 16);
-const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-cube.castShadow = true;
-cube.receiveShadow = true;
-cube.position.set(0, 0.5, 0);
-scene.add(cube);
-
-// Test ground plane
-
-const groundGeometry = new THREE.PlaneGeometry(50, 50);
-const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
-const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-// Lighting
-
-const sun = new THREE.DirectionalLight(0xffffff, 1);
-sun.position.set(10, 20, 10);
-sun.castShadow = true;
-sun.shadow.mapSize.width = 2048;
-sun.shadow.mapSize.height = 2048;
-sun.shadow.camera.near = 0.5;
-sun.shadow.camera.far = 50;
-scene.add(sun);
-
-const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-scene.add(ambientLight);
-
-// Cannon-es.js
-
-const world = new CANNON.World({
-    gravity: new CANNON.Vec3(0, -9.5, 0),
-});
-
-world.broadphase = new CANNON.SAPBroadphase(world); 
-world.allowSleep = false;
-
-const radius = 0.5;
-const halfExtents2 = new CANNON.Vec3(8, radius, 8);
-
-// Test cube ground body
-
-const cubeBody2 = new CANNON.Body({
-    mass: 0,
-    shape: new CANNON.Box(halfExtents2),
-})
-cubeBody2.position.set(0, 0.5, 0);
-cubeBody2.type = CANNON.Body.STATIC;
-world.addBody(cubeBody2);
-
-// Test ground body
-
-const groundBody = new CANNON.Body({
-    mass: 0,
-    type: CANNON.Body.STATIC,
-    shape: new CANNON.Plane(),
-})
-groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-world.addBody(groundBody);
-
-// Contact material for player (playerMaterial) and terrain (voxelMaterial)
-
-const playerMaterial = new CANNON.Material("playerMaterial");
-const voxelMaterial = new CANNON.Material("voxelMaterial");
-
-const contactMaterial = new CANNON.ContactMaterial(playerMaterial, voxelMaterial , {
-    friction: 0.0,
-    restitution: 0.0,
-    contactEquationStiffness: 1e8,
-    contactEquationRelaxation: 4,
-});
-world.addContactMaterial(contactMaterial);
-
-// urlParam to get the username, this is terrible to place here but I'm kind of forced to until the code is restructured.
-
+// Gets username from client
 const urlParams = new URLSearchParams(window.location.search);
 const username = urlParams.get('username');
 
-const player = new ClientPlayer(scene, world, username);
+const player = new ClientPlayer(sceneWorld, username); // Sets up player from client.
 const offset = new THREE.Vector3(20,20,20);
-const camera = new Camera(scene, 10, (window.innerWidth / window.innerHeight));
+const camera = new Camera(scene, 10, (window.innerWidth / window.innerHeight)); // Sets up game camera.
 
-const cameraControl = new CameraManager(camera, player, offset);
-const inputManager = new InputManager(cameraControl);
-const playerMovement = new ClientPlayerMovement(player, camera, inputManager, SPEED, JUMP_FORCE);
-
-player.playerbody.material = playerMaterial;
-groundBody.material = voxelMaterial;
-cubeBody2.material = voxelMaterial;
-player.playerbody.fixedRotation = true;
-player.playerbody.updateMassProperties();
+const cameraControl = new CameraManager(camera, player, offset); // Manager for game camera.
+const inputManager = new InputManager(cameraControl); // Manages client input.
+const playerMovement = new ClientPlayerMovement(player, camera, inputManager, SPEED, JUMP_FORCE); // Manages player movement.
 
 document.body.addEventListener('click', () => document.body.requestPointerLock());
 
@@ -197,7 +111,6 @@ function animate() {
     playerMovement.updateMovement();
     world.fixedStep();
     player.updatePos();
-    cube.position.copy(cubeBody2.position);
     cameraControl.update();
     renderer.render(scene, camera.camera);
 }

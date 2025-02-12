@@ -36,9 +36,9 @@ class ClientChunkManager
 
 export class ClientPlayer
 {
-    constructor(scene, world, username){ // scene and world of threejs render
-        this.scene = scene;
-        this.world = world;
+    constructor(sceneWorld, username){ // scene and world of threejs render
+        this.scene = sceneWorld.getScene();
+        this.world = sceneWorld.getWorld();
         this.username = username;
         this.onGround = false;
 
@@ -55,6 +55,11 @@ export class ClientPlayer
         });
         this.playerbody.position.set(2, 3, 0);
         this.world.addBody(this.playerbody);
+
+        // Apply additional properties - fixed rotation and contact material from SceneWorld class
+        this.playerbody.material = sceneWorld.getPlayerMat();
+        this.playerbody.fixedRotation = true;
+        this.playerbody.updateMassProperties(); 
     }
 
     getPosition() {
