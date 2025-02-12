@@ -5,7 +5,7 @@ export class Chunk {
 	// complexity could save use headaches down the line.
 	static _SIZE_CUBED = DNC.CHUNK_SIZE ** 3;
     static from(jsonChunk) {
-		console.log(jsonChunk);
+		//console.log(jsonChunk);
         let newChunk = new Chunk();
 
         let chunk = jsonChunk._chunk;

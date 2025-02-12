@@ -52,7 +52,8 @@ class Game
     setup() {
         this.network_manager.on("new_chunk", (data) => {
             let chunk = Chunk.from(data.chunk);
-            if (chunk.location == "0,0,1") {
+            if (chunk.location == "0,0,0" || chunk.location == "0,1,0") {
+                console.log(chunk);
                 this.renderChunks(chunk);
             }
             //console.log(chunk.tuple_location);
@@ -88,45 +89,8 @@ class Game
                     let worldX = (xpos * size) + x;
                     let worldY = (ypos * size) + y;
                     let worldZ = (zpos * size) + z;
-                    const id = chunk.at(worldX, worldY, worldZ);
-                    if(id != 0){
-                        const cubeVertices = [
-                            // Front face
-                            worldX, worldY, worldZ,
-                            worldX + 1, worldY, worldZ,
-                            worldX + 1, worldY + 1, worldZ,
-                            worldX, worldY + 1, worldZ,
-                            // Back face
-                            worldX, worldY, worldZ + 1,
-                            worldX + 1, worldY, worldZ + 1,
-                            worldX + 1, worldY + 1, worldZ + 1,
-                            worldX, worldY + 1, worldZ + 1,
-                        ];
-                        vertices.push(...cubeVertices);
-    
-                        // Add indices for this block
-                        const cubeIndices = [
-                            // Front face
-                            indexOffset, indexOffset + 1, indexOffset + 2,
-                            indexOffset, indexOffset + 2, indexOffset + 3,
-                            // Back face
-                            indexOffset + 4, indexOffset + 5, indexOffset + 6,
-                            indexOffset + 4, indexOffset + 6, indexOffset + 7,
-                            // Top face
-                            indexOffset + 3, indexOffset + 2, indexOffset + 6,
-                            indexOffset + 3, indexOffset + 6, indexOffset + 7,
-                            // Bottom face
-                            indexOffset, indexOffset + 1, indexOffset + 5,
-                            indexOffset, indexOffset + 5, indexOffset + 4,
-                            // Left face
-                            indexOffset, indexOffset + 3, indexOffset + 7,
-                            indexOffset, indexOffset + 7, indexOffset + 4,
-                            // Right face
-                            indexOffset + 1, indexOffset + 2, indexOffset + 6,
-                            indexOffset + 1, indexOffset + 6, indexOffset + 5,
-                        ];
-                        indices.push(...cubeIndices);
-                        indexOffset += 8; // 8 vertices per cube
+                    const id = chunk.at(x, y, z);
+                    if(id == 0){
                     }
                 }
             }

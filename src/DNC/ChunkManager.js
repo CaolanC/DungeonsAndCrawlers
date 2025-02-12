@@ -42,7 +42,7 @@ export class ChunkManager {
                 let worldZ = cz * CHUNK_SIZE + z;
 
                 let terrainHeight = this.generateTerrainHeight(worldX, worldZ);
-
+                //console.log(x, z, "\n-> ", terrainHeight);
                 for (let y = 0; y < CHUNK_SIZE; y++) {
                     let worldY = cy * CHUNK_SIZE + y;
 
@@ -59,11 +59,10 @@ export class ChunkManager {
     }
 
     generateTerrainHeight(x, z) {
-        let height = perlinNoise2D(x * 0.1, z * 0.1) * 3; // Scale from -3 to 3
-        return Math.round(height); // Ensure integer values
+        let height = perlinNoise2D(x * 0.05, z * 0.05) * 4; // Scale from -3 to 3
+        return Math.floor(height); // Ensure integer values
     }
 
-    
     getValidChunks(position) {
         const CHUNK_SIZE = DNC.CHUNK_SIZE;
         const render_distance = this.render_distance;
