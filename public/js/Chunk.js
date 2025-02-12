@@ -9,6 +9,7 @@ export class Chunk {
         let newChunk = new Chunk();
 
         let chunk = jsonChunk._chunk;
+        newChunk.location = jsonChunk.location;
 
         for(let x = 0; x < DNC.CHUNK_SIZE; x++) {
             for(let y = 0; y < DNC.CHUNK_SIZE; y++) {

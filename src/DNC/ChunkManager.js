@@ -35,6 +35,7 @@ export class ChunkManager {
         let [cx, cy, cz] = chunk_id.split(',').map(Number);
 
         let chunk = new Chunk(chunk_id); 
+        chunk.location = chunk_id;
 
         for (let x = 0; x < CHUNK_SIZE; x++) {
             for (let z = 0; z < CHUNK_SIZE; z++) {

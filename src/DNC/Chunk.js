@@ -12,7 +12,8 @@ export class Chunk {
         return newChunk;
     }
 
-	constructor(x, y) {
+	constructor(location, x, y) {
+        this.location = location;
 		this._chunk = new Array(Chunk._SIZE_CUBED).fill(0);
 	}
 

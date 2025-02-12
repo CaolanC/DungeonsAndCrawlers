@@ -49,6 +49,7 @@ class Game
     setup() {
         this.network_manager.on("new_chunk", (data) => {
             let chunk = Chunk.from(data.chunk);
+            //console.log(chunk.location);
             //let i = 0;
             //chunk._chunk.forEach((index) => {
             //    if (index > 0) {
