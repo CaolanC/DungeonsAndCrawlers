@@ -74,13 +74,11 @@ class Game
         const ypos = location[1];
         const zpos = location[2];
 
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const geometry = new THREE.BufferGeometry();
         const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
-        const mesh = new THREE.InstancedMesh(geometry, material, size ** 3);
-
-        const matrix = new THREE.Matrix4();
-        let instanceCount = 0;
-
+        const vertices = [];
+        const indices = [];
+        let indexOffset = 0;
         
         for(let x = 0; x < size; x++) {
             for(let y = 0; y < size; y++) {
@@ -90,26 +88,55 @@ class Game
                     let worldZ = (zpos * size) + z;
                     const id = chunk.at(worldX, worldY, worldZ);
                     if(id != 0){
-                        matrix.setPosition(worldX, worldY, worldZ);
-                        mesh.setMatrixAt(instanceCount, matrix);
-                        instanceCount++;
-
-                        // const voxSize = new CANNON.Vec3(0.5, 0.5, 0.5);
-                        // const voxelBody = new CANNON.Body({
-                        //     mass: 0,
-                        //     shape: new CANNON.Box(voxSize),
-                        // });
-                        // voxelBody.position.set(X, Y, Z);
-                        // this.world.addBody(voxelBody);
-                        // voxelBody.material = this.sceneWorld.getVoxelMat();
-                        // voxelBody.updateMassProperties();
+                        const cubeVertices = [
+                            // Front face
+                            worldX, worldY, worldZ,
+                            worldX + 1, worldY, worldZ,
+                            worldX + 1, worldY + 1, worldZ,
+                            worldX, worldY + 1, worldZ,
+                            // Back face
+                            worldX, worldY, worldZ + 1,
+                            worldX + 1, worldY, worldZ + 1,
+                            worldX + 1, worldY + 1, worldZ + 1,
+                            worldX, worldY + 1, worldZ + 1,
+                        ];
+                        vertices.push(...cubeVertices);
+    
+                        // Add indices for this block
+                        const cubeIndices = [
+                            // Front face
+                            indexOffset, indexOffset + 1, indexOffset + 2,
+                            indexOffset, indexOffset + 2, indexOffset + 3,
+                            // Back face
+                            indexOffset + 4, indexOffset + 5, indexOffset + 6,
+                            indexOffset + 4, indexOffset + 6, indexOffset + 7,
+                            // Top face
+                            indexOffset + 3, indexOffset + 2, indexOffset + 6,
+                            indexOffset + 3, indexOffset + 6, indexOffset + 7,
+                            // Bottom face
+                            indexOffset, indexOffset + 1, indexOffset + 5,
+                            indexOffset, indexOffset + 5, indexOffset + 4,
+                            // Left face
+                            indexOffset, indexOffset + 3, indexOffset + 7,
+                            indexOffset, indexOffset + 7, indexOffset + 4,
+                            // Right face
+                            indexOffset + 1, indexOffset + 2, indexOffset + 6,
+                            indexOffset + 1, indexOffset + 6, indexOffset + 5,
+                        ];
+                        indices.push(...cubeIndices);
+                        indexOffset += 8; // 8 vertices per cube
                     }
                 }
             }
         }
-        mesh.count = instanceCount; // Set the number of instances to render
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals(); // For lighting
+    
+        const mesh = new THREE.Mesh(geometry, material);
         this.scene.add(mesh);
-        
+
     }
 
     loop() {
@@ -164,7 +191,7 @@ function animate() {
     playerMovement.updateMovement();
     world.fixedStep();
     player.updatePos();
-    cameraControl.update();
+    // cameraControl.update();
     renderer.render(scene, camera.camera);
 }
 

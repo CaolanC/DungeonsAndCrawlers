@@ -20,6 +20,15 @@ export class SceneWorld {
         this.ambientLight = new THREE.AmbientLight(0x404040, 0.5);
         this.scene.add(this.ambientLight);
 
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(10, 10, 10).normalize();
+        this.scene.add(directionalLight);
+
+        // Enable shadows
+        directionalLight.castShadow = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+
         this.world = new CANNON.World({
             gravity: new CANNON.Vec3(0, -9.51, 0),
         });
