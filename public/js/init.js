@@ -51,7 +51,7 @@ class Game
     setup() {
         this.network_manager.on("new_chunk", (data) => {
             let chunk = Chunk.from(data.chunk);
-            this.renderChunks(chunk);
+            //console.log(chunk.tuple_location);
             //console.log(chunk.location);
             //console.log(chunk._chunk);
             //let i = 0;

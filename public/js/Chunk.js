@@ -10,6 +10,7 @@ export class Chunk {
 
         let chunk = jsonChunk._chunk;
         newChunk.location = jsonChunk.location;
+        newChunk.tuple_location = jsonChunk.tuple_location;
 
         for(let x = 0; x < DNC.CHUNK_SIZE; x++) {
             for(let y = 0; y < DNC.CHUNK_SIZE; y++) {
@@ -21,7 +22,8 @@ export class Chunk {
     
         return newChunk;
     }
-
+    location = null;
+    tuple_location = null;
 	constructor(x, y) {
 		this._chunk = new Array(Chunk._SIZE_CUBED).fill(0);
 	}

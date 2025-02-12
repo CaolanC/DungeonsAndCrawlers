@@ -14,6 +14,7 @@ export class Chunk {
 
 	constructor(location, x, y) {
         this.location = location;
+        this.tuple_location = this.parseIntegerTuple(location);
 		this._chunk = new Array(Chunk._SIZE_CUBED).fill(0);
 	}
 
@@ -25,4 +26,13 @@ export class Chunk {
 	set(block, x, y, z) {
 		this._chunk[x + z * DNC.CHUNK_SIZE + y * Chunk._SIZE_SQUARED] = block;
 	}
+
+    parseIntegerTuple(input) {
+
+        return input.split(',').map(item => {
+            let num = parseInt(item.trim(), 10);
+
+            return num;
+        });
+    }
 }
