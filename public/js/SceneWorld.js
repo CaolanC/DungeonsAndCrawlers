@@ -21,7 +21,7 @@ export class SceneWorld {
         this.scene.add(this.ambientLight);
 
         this.world = new CANNON.World({
-            gravity: new CANNON.Vec3(0, -9.5, 0),
+            gravity: new CANNON.Vec3(0, -9.51, 0),
         });
         
         this.world.broadphase = new CANNON.SAPBroadphase(this.world); 
