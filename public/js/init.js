@@ -78,11 +78,14 @@ class Game
             this.blockGeometry = new THREE.BoxGeometry(1, 1, 1);
         }
         if (!this.blockMaterial) {
-            this.blockMaterial = new THREE.MeshBasicMaterial({ color: 0x888888, wireframe: false });
+            this.blockMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
         }
 
         const numBlocks = size * size * size; // Maximum possible blocks
         const instancedMesh = new THREE.InstancedMesh(this.blockGeometry, this.blockMaterial, numBlocks);
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = true;
+
 
         let index = 0;
         const matrix = new THREE.Matrix4();
