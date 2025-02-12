@@ -50,6 +50,7 @@ class Game
         this.network_manager.on("new_chunk", (data) => {
             let chunk = Chunk.from(data.chunk);
             //console.log(chunk.location);
+            //console.log(chunk._chunk);
             //let i = 0;
             //chunk._chunk.forEach((index) => {
             //    if (index > 0) {
@@ -127,4 +128,5 @@ websocketConnect();
 console.log(player.username);
 let game = new Game(player);
 game.start();
+
 
