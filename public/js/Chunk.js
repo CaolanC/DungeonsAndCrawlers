@@ -28,10 +28,10 @@ export class Chunk {
 
 	at(x, y, z) {
 		// TODO: general bounds checking private method.
-		return this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED];
+		return this._chunk[x + z * DNC.CHUNK_SIZE + y * Chunk._SIZE_SQUARED];
 	}
 
 	set(block, x, y, z) {
-		this._chunk[x + y * DNC.CHUNK_SIZE + z * Chunk._SIZE_SQUARED] = block;
+		this._chunk[x + z * DNC.CHUNK_SIZE + y * Chunk._SIZE_SQUARED] = block;
 	}
 }
