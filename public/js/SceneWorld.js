@@ -20,6 +20,15 @@ export class SceneWorld {
         this.ambientLight = new THREE.AmbientLight(0x404040, 0.5);
         this.scene.add(this.ambientLight);
 
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(10, 10, 10).normalize();
+        this.scene.add(directionalLight);
+
+        // Enable shadows
+        directionalLight.castShadow = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+
         this.world = new CANNON.World({
             gravity: new CANNON.Vec3(0, -9.51, 0),
         });
@@ -42,25 +51,6 @@ export class SceneWorld {
         this.groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
         this.world.addBody(this.groundBody);
 
-        // Test cube
-
-        this.geometry = new THREE.BoxGeometry(16, 1, 16);
-        this.material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        this.cube = new THREE.Mesh(this.geometry, this.material);
-        this.cube.castShadow = true;
-        this.cube.receiveShadow = true;
-        this.cube.position.set(0, 0.5, 0);
-        this.scene.add(this.cube);
-
-        this.halfExtents2 = new CANNON.Vec3(8, 0.5, 8);
-        this.cubeBody2 = new CANNON.Body({
-            mass: 0,
-            shape: new CANNON.Box(this.halfExtents2),
-        })
-        this.cubeBody2.position.set(0, 0.5, 0);
-        this.cubeBody2.type = CANNON.Body.STATIC;
-        this.world.addBody(this.cubeBody2);
-
         //
 
         // Contact material
@@ -77,7 +67,6 @@ export class SceneWorld {
         this.world.addContactMaterial(this.contactMaterial);
 
         this.groundBody.material = this.voxelMaterial;
-        this.cubeBody2.material = this.voxelMaterial;
     }
 
     getPlayerMat() {

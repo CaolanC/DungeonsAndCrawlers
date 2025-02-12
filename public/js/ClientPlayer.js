@@ -45,7 +45,7 @@ export class ClientPlayer
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
         this.playercube = new THREE.Mesh(geometry, material);
-        this.playercube.position.set(2, 3, 0);
+        this.playercube.position.set(0, 5, 0);
         this.scene.add(this.playercube);
 
         const size = new CANNON.Vec3(0.5, 0.5, 0.5);
@@ -53,7 +53,7 @@ export class ClientPlayer
             mass: 5,
             shape: new CANNON.Box(size),
         });
-        this.playerbody.position.set(2, 3, 0);
+        this.playerbody.position.set(0, 5, 0);
         this.world.addBody(this.playerbody);
 
         // Apply additional properties - fixed rotation and contact material from SceneWorld class
