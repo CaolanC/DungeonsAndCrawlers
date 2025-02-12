@@ -1,6 +1,0 @@
-
-class PlayerObjMovement {
-    constructor(player) {
-
-    }
-}

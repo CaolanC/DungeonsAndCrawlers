@@ -34,11 +34,12 @@ class ClientChunkManager
     }
 }
 
-export class PlayerObject
+export class ClientPlayer
 {
-    constructor(scene, world){ // scene and world of threejs render
+    constructor(scene, world, username){ // scene and world of threejs render
         this.scene = scene;
         this.world = world;
+        this.username = username;
         this.onGround = false;
 
         const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -68,8 +69,31 @@ export class PlayerObject
         return this.playerbody.velocity
     }
 
+    getVelocityY() {
+        return this.playerbody.velocity.y;
+    }
+
+    setVelocityX(X) {
+        this.playerbody.velocity.x = X;
+    }
+
+    setVelocityY(Y) {
+        this.playerbody.velocity.y = Y;
+    }
+    
+    setVelocityZ(Z) {
+        this.playerbody.velocity.z = Z;
+    }
+
     getGrounded() {
         return this.onGround;
     }
 
+    setGrounded(x) {
+        this.onGround = x;
+    }
+
+    updatePos() {
+        this.playercube.position.copy(this.playerbody.position);
+    }
 }
