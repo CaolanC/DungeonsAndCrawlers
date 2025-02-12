@@ -52,7 +52,9 @@ class Game
     setup() {
         this.network_manager.on("new_chunk", (data) => {
             let chunk = Chunk.from(data.chunk);
-            this.renderChunks(chunk);
+            if (chunk.location == "0,0,1") {
+                this.renderChunks(chunk);
+            }
             //console.log(chunk.tuple_location);
             //console.log(chunk.location);
             //console.log(chunk._chunk);
@@ -191,7 +193,7 @@ function animate() {
     playerMovement.updateMovement();
     world.fixedStep();
     player.updatePos();
-    // cameraControl.update();
+    cameraControl.update();
     renderer.render(scene, camera.camera);
 }
 

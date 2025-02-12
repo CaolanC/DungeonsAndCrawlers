@@ -7,7 +7,7 @@ export const DNC = {
 		STONE: 1,
 	},
     FRAMERATE: 10,
-    RENDER_DISTANCE: 4,
+    RENDER_DISTANCE: 3,
 
     get FRAME_DURATION() {
         return 1000 / DNC.FRAMERATE;

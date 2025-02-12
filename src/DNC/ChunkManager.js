@@ -1,5 +1,5 @@
 import { DNC } from "./Config.js";
-import { perlinNoise2DNorm } from "./PerlinNoise.js";
+import { perlinNoise2DNorm, perlinNoise2D } from "./PerlinNoise.js";
 import { Chunk } from "./Chunk.js";
 
 export class ChunkManager { 
@@ -41,8 +41,7 @@ export class ChunkManager {
                 let worldX = cx * CHUNK_SIZE + x;
                 let worldZ = cz * CHUNK_SIZE + z;
 
-                let heightVariation = perlinNoise2DNorm(worldX * 0.1, worldZ * 0.1) * (MAX_VARIATION * 2) - MAX_VARIATION;
-                let terrainHeight = Math.floor(BASE_HEIGHT + heightVariation);
+                let terrainHeight = this.generateTerrainHeight(worldX, worldZ);
 
                 for (let y = 0; y < CHUNK_SIZE; y++) {
                     let worldY = cy * CHUNK_SIZE + y;
@@ -59,6 +58,10 @@ export class ChunkManager {
         return chunk;
     }
 
+    generateTerrainHeight(x, z) {
+        let height = perlinNoise2D(x * 0.1, z * 0.1) * 3; // Scale from -3 to 3
+        return Math.round(height); // Ensure integer values
+    }
 
     
     getValidChunks(position) {
