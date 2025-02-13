@@ -74,6 +74,7 @@ class Game
         const ypos = location[1];
         const zpos = location[2];
 
+<<<<<<< HEAD
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshStandardMaterial({color: 0x00FF00});
 
@@ -93,13 +94,51 @@ class Game
                             matrix.setPosition(worldX, worldY, worldZ);
                             instancedMesh.setMatrixAt(instanceIndex++, matrix);
                         }
+=======
+        if (!this.blockGeometry) {
+            this.blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+        }
+        if (!this.blockMaterial) {
+            this.blockMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+        }
+
+        const numBlocks = size * size * size; // Maximum possible blocks
+        const instancedMesh = new THREE.InstancedMesh(this.blockGeometry, this.blockMaterial, numBlocks);
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = true;
+
+
+        let index = 0;
+        const matrix = new THREE.Matrix4();
+
+        for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+                for (let z = 0; z < size; z++) {
+                    let worldX = (xpos * size) + x;
+                    let worldY = (ypos * size) + y;
+                    let worldZ = (zpos * size) + z;
+
+                    const block_id = chunk.at(x, y, z);
+
+                    if (block_id == 1) {
+                        matrix.setPosition(worldX, worldY, worldZ);
+                        instancedMesh.setMatrixAt(index++, matrix);
+                    }
+>>>>>>> d3c01cd8bd1415c4b929fdd400c1bca3c0c65b94
                 }
             }
         }
 
+<<<<<<< HEAD
         instancedMesh.instanceMatrix.needsUpdate = true;
         this.scene.add(instancedMesh);
+=======
+        // Update instance count
+        instancedMesh.count = index;
+        instancedMesh.instanceMatrix.needsUpdate = true;
+>>>>>>> d3c01cd8bd1415c4b929fdd400c1bca3c0c65b94
 
+        this.scene.add(instancedMesh);
     }
 
     loop() {
