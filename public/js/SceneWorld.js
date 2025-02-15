@@ -28,7 +28,6 @@ export class SceneWorld {
         directionalLight.castShadow = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-
         this.world = new CANNON.World({
             gravity: new CANNON.Vec3(0, -9.51, 0),
         });
@@ -41,6 +40,7 @@ export class SceneWorld {
         this.ground = new THREE.Mesh(this.groundGeometry, this.groundMaterial);
         this.ground.rotation.x = -Math.PI / 2;
         this.ground.receiveShadow = true;
+        this.ground.position.set(0, 0.5, 0);
         this.scene.add(this.ground);
 
         this.groundBody = new CANNON.Body({
@@ -49,6 +49,7 @@ export class SceneWorld {
             shape: new CANNON.Plane(),
         })
         this.groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+        this.groundBody.position.set(0, 0.5, 0);
         this.world.addBody(this.groundBody);
 
         //

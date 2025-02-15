@@ -1,5 +1,6 @@
 //import * as THREE from 'three';
 
+import * as BufferGeometryUtils from "https://cdn.jsdelivr.net/npm/three/examples/js/utils/BufferGeometryUtils.js";
 import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
 import { SceneWorld } from "./SceneWorld.js";
 import { Camera } from "./Camera.js";
@@ -74,12 +75,24 @@ class Game
         const ypos = location[1];
         const zpos = location[2];
 
+        const chunkX = xpos * size;
+        const chunkY = ypos * size;
+        const chunkZ = zpos * size;
 
+        if (!this.textureLoader) {
+            this.textureLoader = new THREE.TextureLoader();
+        }
+        if (!this.textureAtlas) {
+            this.textureAtlas = this.textureLoader.load('https://threejs.org/examples/textures/crate.gif');
+            this.textureAtlas.wrapS = THREE.RepeatWrapping;
+            this.textureAtlas.wrapT = THREE.RepeatWrapping;
+            this.textureAtlas.magFilter = THREE.NearestFilter;
+        }
         if (!this.blockGeometry) {
             this.blockGeometry = new THREE.BoxGeometry(1, 1, 1);
         }
         if (!this.blockMaterial) {
-            this.blockMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+            this.blockMaterial = new THREE.MeshStandardMaterial({ map: this.textureAtlas, side: THREE.DoubleSide });
         }
 
         const numBlocks = size * size * size; // Maximum possible blocks
@@ -87,21 +100,21 @@ class Game
         // instancedMesh.castShadow = true;
         // instancedMesh.receiveShadow = true;
 
-
         let index = 0;
         const matrix = new THREE.Matrix4();
 
         for (let x = 0; x < size; x++) {
             for (let y = 0; y < size; y++) {
                 for (let z = 0; z < size; z++) {
-                    let worldX = (xpos * size) + x;
-                    let worldY = (ypos * size) + y;
-                    let worldZ = (zpos * size) + z;
+                    let worldX = chunkX + x;
+                    let worldY = chunkY + y;
+                    let worldZ = chunkZ + z;
                     const block_id = chunk.at(x, y, z);
 
                     if (block_id == 1) {
                         matrix.setPosition(worldX, worldY, worldZ);
                         instancedMesh.setMatrixAt(index++, matrix);
+
                     }
                 }
             }
