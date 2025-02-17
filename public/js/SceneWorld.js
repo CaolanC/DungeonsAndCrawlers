@@ -28,63 +28,55 @@ export class SceneWorld {
         directionalLight.castShadow = true;
         this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
-        this.world = new CANNON.World({
-            gravity: new CANNON.Vec3(0, -9.51, 0),
-        });
+        // this.world = new CANNON.World({
+        //     gravity: new CANNON.Vec3(0, -9.51, 0),
+        // });
         
-        this.world.broadphase = new CANNON.SAPBroadphase(this.world); 
-        this.world.allowSleep = false;
+        // this.world.broadphase = new CANNON.SAPBroadphase(this.world); 
+        // this.world.allowSleep = false;
 
-        this.groundGeometry = new THREE.PlaneGeometry(50, 50);
-        this.groundMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
-        this.ground = new THREE.Mesh(this.groundGeometry, this.groundMaterial);
-        this.ground.rotation.x = -Math.PI / 2;
-        this.ground.receiveShadow = true;
-        this.ground.position.set(0, 0.5, 0);
-        this.scene.add(this.ground);
-
-        this.groundBody = new CANNON.Body({
-            mass: 0,
-            type: CANNON.Body.STATIC,
-            shape: new CANNON.Plane(),
-        })
-        this.groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        this.groundBody.position.set(0, 0.5, 0);
-        this.world.addBody(this.groundBody);
+        // this.groundBody = new CANNON.Body({
+        //     mass: 0,
+        //     type: CANNON.Body.STATIC,
+        //     shape: new CANNON.Plane(),
+        // })
+        // this.groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+        // this.groundBody.position.set(0, 0.5, 0);
+        // this.world.addBody(this.groundBody);
 
         //
 
         // Contact material
 
-        this.playerMaterial = new CANNON.Material("playerMaterial");
-        this.voxelMaterial = new CANNON.Material("voxelMaterial");
+        // this.playerMaterial = new CANNON.Material("playerMaterial");
+        // this.voxelMaterial = new CANNON.Material("voxelMaterial");
 
-        this.contactMaterial = new CANNON.ContactMaterial(this.playerMaterial, this.voxelMaterial, {
-            friction: 0.0,
-            restitution: 0.0,
-            contactEquationStiffness: 1e8,
-            contactEquationRelaxation: 4,
-        });
-        this.world.addContactMaterial(this.contactMaterial);
+        // this.contactMaterial = new CANNON.ContactMaterial(this.playerMaterial, this.voxelMaterial, {
+        //     friction: 0.0,
+        //     restitution: 0.0,
+        //     contactEquationStiffness: 1e8,
+        //     contactEquationRelaxation: 4,
+        // });
+        // this.world.addContactMaterial(this.contactMaterial);
 
-        this.groundBody.material = this.voxelMaterial;
+        // this.groundBody.material = this.voxelMaterial;
     }
 
-    getPlayerMat() {
-        return this.playerMaterial;
-    }
+    // getPlayerMat() {
+    //     return this.playerMaterial;
+    // }
 
-    getVoxelMat() {
-        return this.voxelMaterial;
-    }
+    // getVoxelMat() {
+    //     return this.voxelMaterial;
+    // }
 
     getScene() {
         return this.scene;
     }
 
-    getWorld() {
-        return this.world;
-    }
+    // getWorld() {
+    //     return this.world;
+    // }
 
     getRender() {
         return this.renderer;

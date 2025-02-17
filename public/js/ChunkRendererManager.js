@@ -3,9 +3,9 @@
 // Function to determine whether chunks should be unloaded or reloaded (?)
 
 export class ChunkRendererManager {
-    constructor(scene, world) {
+    constructor(scene) {
         this.scene = scene;
-        this.world = world;
+        // this.world = world;
         this.chunkMap = new Map();
     }
 
@@ -16,12 +16,18 @@ export class ChunkRendererManager {
 
     getChunk(location){
         const key = this.convertKey(location);
-        return this.chunkMap.get(key);
+        const innermap = this.chunkMap.get(key);
+        if(innermap){
+            return innermap.get("chunk");
+        }
     }
 
-    storeChunk(location, mesh){
+    storeChunk(location, chunk, mesh){
+        const innermap = new Map();
+        innermap.set("chunk", chunk);
+        innermap.set("mesh", mesh);
         const key = this.convertKey(location);
-        this.chunkMap.set(key, mesh);
+        this.chunkMap.set(key, innermap);
     }
 
     reloadChunk(location){
