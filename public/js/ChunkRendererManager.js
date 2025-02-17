@@ -45,4 +45,8 @@ export class ChunkRendererManager {
             this.scene.remove(mesh);
         }
     }
+
+    getMap(){
+        return this.chunkMap;
+    }
 }

@@ -45,6 +45,7 @@ export class ClientPlayer
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
         this.playercube = new THREE.Mesh(geometry, material);
+        this.playercube.castShadow = true;
         this.playercube.position.set(0, 5, 0);
         this.scene.add(this.playercube);
 
