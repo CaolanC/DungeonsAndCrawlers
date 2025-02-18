@@ -169,7 +169,7 @@ const renderer = sceneWorld.getRender();
 
 // Chunk map
 const chunkManager = new ChunkRendererManager(scene);
-const physics = new Physics(chunkManager, DNC.CHUNK_SIZE);
+const physics = new Physics(chunkManager, DNC.CHUNK_SIZE, scene);
 
 // Gets username from client
 const urlParams = new URLSearchParams(window.location.search);
@@ -181,7 +181,7 @@ const camera = new Camera(scene, 10, (window.innerWidth / window.innerHeight)); 
 
 const cameraControl = new CameraManager(camera, player, offset); // Manager for game camera.
 const inputManager = new InputManager(cameraControl); // Manages client input.
-const playerMovement = new ClientPlayerMovement(player, camera, inputManager, physics, SPEED, JUMP_FORCE); // Manages player movement.
+const playerMovement = new ClientPlayerMovement(player, camera, inputManager, physics, 4, JUMP_FORCE); // Manages player movement.
 
 document.body.addEventListener('click', () => document.body.requestPointerLock());
 
@@ -194,6 +194,7 @@ function animate() {
     requestAnimationFrame(animate);
     // playerMovement.checkGrounded();
     playerMovement.updateMovement(deltaTime);
+    physics.update(deltaTime, player);
     // world.fixedStep();
     // player.updatePos();
     cameraControl.update();
