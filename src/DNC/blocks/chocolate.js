@@ -1,6 +1,6 @@
 export default {
-    name: "Stone",
-    id: 1,
+    name: "Chocolate",
+    id: 5,
     mod_namespace: "DNC",
     client: {
         properties: {

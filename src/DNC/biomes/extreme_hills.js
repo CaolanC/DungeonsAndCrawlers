@@ -2,7 +2,7 @@ export default {
     name: "Grassland",
     mod_namespace: "DNC",
 	layers: [("stone", 1)],
-	moisture: 0.5,
-	temperature: 0.5,
-    terrain_amplitude: 3
+	moisture: 0.1,
+	temperature: 0.1,
+    terrain_amplitude: 32
 };

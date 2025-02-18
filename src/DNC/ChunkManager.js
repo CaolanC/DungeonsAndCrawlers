@@ -1,6 +1,8 @@
 import { DNC } from "./Config.js";
 import { perlinNoise2DNorm, perlinNoise2D } from "./PerlinNoise.js";
 import { Chunk } from "./Chunk.js";
+import { BiomeRegistry } from "./BiomeRegistry.js";
+import { BiomeMap } from "./BiomeMap.js";
 
 export class ChunkManager { 
 
@@ -8,6 +10,7 @@ export class ChunkManager {
         this.render_distance = render_distance;
         this.loaded_chunks = new Set();
         this.generated_chunks = new Map();
+        this.biome_map = new BiomeMap(0, 0, 0.01);
     }
 
     getChunksToLoad(player) {
@@ -16,7 +19,7 @@ export class ChunkManager {
         chunk_ids.forEach((chunk_id) => {
             if (!player.loaded_chunks.has(chunk_id)) {
                 if (!this.generated_chunks.has(chunk_id)) {
-                    let new_chunk = this.generateChunk(chunk_id)
+                    let new_chunk = this.generateChunk(chunk_id);
                     this.generated_chunks.set(chunk_id, new_chunk);
                     chunks.add(new_chunk);
                 } else {
@@ -27,6 +30,7 @@ export class ChunkManager {
 
         return chunks;
     }
+
     generateChunk(chunk_id) {
         const CHUNK_SIZE = DNC.CHUNK_SIZE;
         const MAX_VARIATION = 6; 
@@ -40,8 +44,11 @@ export class ChunkManager {
             for (let z = 0; z < CHUNK_SIZE; z++) {
                 let worldX = cx * CHUNK_SIZE + x;
                 let worldZ = cz * CHUNK_SIZE + z;
-
-                let terrainHeight = this.generateTerrainHeight(worldX, worldZ);
+                let biome = this.biome_map.getBiomeAt(worldX, worldZ);
+                //if (biome.name == "Grassland") {
+                //    console.log(biome);
+                //}
+                let terrainHeight = this.generateTerrainHeight(worldX, worldZ, biome);
                 //console.log(x, z, "\n-> ", terrainHeight);
                 for (let y = 0; y < CHUNK_SIZE; y++) {
                     let worldY = cy * CHUNK_SIZE + y;
@@ -58,8 +65,8 @@ export class ChunkManager {
         return chunk;
     }
 
-    generateTerrainHeight(x, z) {
-        let height = perlinNoise2D(x * 0.05, z * 0.05) * 4; // Scale from -3 to 3
+    generateTerrainHeight(x, z, biome) {
+        let height = perlinNoise2D(x * 0.05, z * 0.05) * biome.terrain_amplitude; // Scale from -3 to 3
         return Math.floor(height); // Ensure integer values
     }
 
