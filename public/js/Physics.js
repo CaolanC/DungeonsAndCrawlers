@@ -85,7 +85,7 @@ export class Physics {
             const cy = closestPoint.y - pos.y;
             const cz = closestPoint.z - pos.z;
 
-            if(Math.abs(cx) < 0.5 && Math.abs(cy) < 0.5 && Math.abs(cz) < 0.5){
+            if(Math.abs(cx) <= 0.5 && Math.abs(cy) <= 0.5 && Math.abs(cz) <= 0.5){
                 const overlapX = 0.5 - Math.abs(cx);
                 const overlapY = 0.5 - Math.abs(cy);
                 const overlapZ = 0.5 - Math.abs(cz);
