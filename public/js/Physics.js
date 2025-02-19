@@ -85,7 +85,7 @@ export class Physics {
             const cy = closestPoint.y - pos.y;
             const cz = closestPoint.z - pos.z;
 
-            if(Math.abs(cx) <= 0.5 && Math.abs(cy) <= 0.5 && Math.abs(cz) <= 0.5){
+            if(Math.abs(cx) < 0.5 && Math.abs(cy) < 0.5 && Math.abs(cz) < 0.5){
                 const overlapX = 0.5 - Math.abs(cx);
                 const overlapY = 0.5 - Math.abs(cy);
                 const overlapZ = 0.5 - Math.abs(cz);
@@ -124,11 +124,16 @@ export class Physics {
         collisions.sort((a, b) => { return a.overlap < b.overlap })
 
         for(const collision of collisions){
-            if(collision.overlap > 0){ // Make sure the overlap is greater than 0 to prevent unncessary position adjustments
-                const newpos = collision.normal.clone();
-                newpos.multiplyScalar(collision.overlap);
-                player.getPosition().add(newpos);
+            const p = player.getPosition();
+            const cx = collision.contactPoint.x - p.x;
+            const cy = collision.contactPoint.y - p.y;
+            const cz = collision.contactPoint.z - p.z;
+            if(!(Math.abs(cx) < 0.5 && Math.abs(cy) < 0.5 && Math.abs(cz) < 0.5)){
+                continue;
             }
+            const newpos = collision.normal.clone();
+            newpos.multiplyScalar(collision.overlap);
+            player.getPosition().add(newpos);
 
             const vel = player.getVelocity();
             const vnormal = vel.clone().dot(collision.normal);
