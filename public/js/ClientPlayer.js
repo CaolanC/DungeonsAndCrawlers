@@ -42,60 +42,24 @@ export class ClientPlayer
         this.username = username;
         this.onGround = false;
 
+        this.velocity = new THREE.Vector3();
+
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const material = new THREE.MeshStandardMaterial({ wireframe: true, color: 0xffffff });
         this.playercube = new THREE.Mesh(geometry, material);
         this.playercube.castShadow = true;
-        this.playercube.position.set(0, 2, 0);
+        this.playercube.position.set(0, 20, 0);
         this.scene.add(this.playercube);
 
-        // this.boundsHelper = new THREE.Mesh(
-        //     new THREE.CylinderGeometry(0.5, 0.5, 2, 16),
-        //     new THREE.MeshStandardMaterial({ wireframe: true })
-        // );
-        // this.scene.add(this.boundsHelper);
-
-        // const size = new CANNON.Vec3(0.5, 0.5, 0.5);
-        // this.playerbody = new CANNON.Body({
-        //     mass: 5,
-        //     shape: new CANNON.Box(size),
-        // });
-        // this.playerbody.position.set(0, 5, 0);
-        // this.world.addBody(this.playerbody);
-
-        // // Apply additional properties - fixed rotation and contact material from SceneWorld class
-        // this.playerbody.material = sceneWorld.getPlayerMat();
-        // this.playerbody.fixedRotation = true;
-        // this.playerbody.updateMassProperties(); 
     }
 
     getPosition() {
         return this.playercube.position;
     }
 
-    // getBodyPos() {
-    //     return this.playerbody.position;
-    // }
-
-    // getVelocity() {
-    //     return this.playerbody.velocity
-    // }
-
-    // getVelocityY() {
-    //     return this.playerbody.velocity.y;
-    // }
-
-    // setVelocityX(X) {
-    //     this.playerbody.velocity.x = X;
-    // }
-
-    // setVelocityY(Y) {
-    //     this.playerbody.velocity.y = Y;
-    // }
-    
-    // setVelocityZ(Z) {
-    //     this.playerbody.velocity.z = Z;
-    // }
+    getVelocity() {
+        return this.velocity;
+    }
 
     getGrounded() {
         return this.onGround;

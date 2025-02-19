@@ -7,48 +7,43 @@ export class ClientPlayerMovement {
         this.physics = physics;
         this.SPEED = SPEED;
         this.JUMP_FORCE = JUMP_FORCE;
-
-        this.velocity = new THREE.Vector3(0, 0, 0);
+        this.gravity = 9.8;
     }
 
-    checkGrounded() {
-        // if(this.player.getVelocityY() < 0.05 && this.player.getVelocityY() >= 0) { this.player.setGrounded(true); }
-        // else { this.player.setGrounded(false); }
-    }
+
 
     updateMovement(deltaTime) {
         const move = this.inputManager.getMoveState();
-        const currentY = this.velocity.y;
+        const currentY = this.player.velocity.y;
 
         const { vert, hori } = this.camera.getDirection();
     
-        this.velocity.x = 0;
-        this.velocity.z = 0;
+        this.player.velocity.x = 0;
+        this.player.velocity.z = 0;
 
-        if(move.forward) { this.velocity.add(vert); }
-        if(move.backward) { this.velocity.sub(vert); }
-        if(move.right) { this.velocity.add(hori); }
-        if(move.left) { this.velocity.sub(hori); }
+        if(move.forward) { this.player.velocity.add(vert); }
+        if(move.backward) { this.player.velocity.sub(vert); }
+        if(move.right) { this.player.velocity.add(hori); }
+        if(move.left) { this.player.velocity.sub(hori); }
     
-        if (this.velocity.length() > 0) {
-            this.velocity.normalize().multiplyScalar(this.SPEED * deltaTime);
+        if (this.player.velocity.length() > 0) {
+            this.player.velocity.normalize().multiplyScalar(this.SPEED * deltaTime);
         }
     
-        // this.player.setVelocityX(this.velocity.x);
-        // this.player.setVelocityZ(this.velocity.z);
+        if(!this.player.getGrounded()){
+            this.player.velocity.y -= this.gravity * deltaTime;
+        }
+        else{
+            this.player.velocity.y = 0;
+        }
     
         if(move.jump && this.player.getGrounded()) {
-            // this.player.setVelocityY(this.JUMP_FORCE);
-            // this.player.setGrounded(false);  
-        } 
-        else {
-            // this.player.setVelocityY(currentY);
+            this.player.velocity.y += this.JUMP_FORCE;
         }
 
-        const newPos = this.player.getPosition().clone().add(this.velocity.clone());
+        const newPos = this.player.getPosition().clone().add(this.player.velocity.clone());
         this.player.playercube.position.copy(newPos);
         // this.player.boundsHelper.position.copy(this.player.playercube.position);
 
-        this.physics.broadphase(this.player);
     }
 }
