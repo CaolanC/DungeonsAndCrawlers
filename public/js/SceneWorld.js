@@ -2,7 +2,7 @@
 export class SceneWorld {
     constructor() {
         this.scene = new THREE.Scene();
-        this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         document.body.appendChild(this.renderer.domElement);
