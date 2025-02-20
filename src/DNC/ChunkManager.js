@@ -2,6 +2,7 @@ import { DNC } from "./Config.js";
 import { perlinNoise2DNorm, perlinNoise2D } from "./PerlinNoise.js";
 import { Chunk } from "./Chunk.js";
 import { BiomeRegistry } from "./BiomeRegistry.js";
+import { BlockRegistry } from "./BlockRegistry.js";
 import { BiomeMap } from "./BiomeMap.js";
 
 export class ChunkManager { 
@@ -54,6 +55,10 @@ export class ChunkManager {
                     let worldY = cy * CHUNK_SIZE + y;
 
                     if (worldY <= terrainHeight) {
+                        let block = BlockRegistry.blocks.get(biome.layers.surface);
+                        if (block != 2) {
+                            console.log(block);
+                        }
                         chunk.set(1, x, y, z); // Solid block
                     } else {
                         chunk.set(0, x, y, z); // Air
