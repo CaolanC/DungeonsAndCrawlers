@@ -165,7 +165,7 @@ class Game
 
                         matrix.setPosition(worldX, worldY, worldZ);
                         instancedMesh.setMatrixAt(index, matrix);
-                        blockIds[index] = block_id; //Math.random() < 0.5 ? 1.0 : 2.0;
+                        blockIds[index] = block_id;
                         index++;
 
                     }
@@ -228,8 +228,8 @@ const player = new ClientPlayer(sceneWorld, username); // Sets up player from cl
 const offset = new THREE.Vector3(20,20,20);
 const camera = new Camera(scene, 10, (window.innerWidth / window.innerHeight)); // Sets up game camera.
 
-const cameraControl = new CameraManager(camera, player, offset); // Manager for game camera.
-const inputManager = new InputManager(cameraControl); // Manages client input.
+const inputManager = new InputManager(); // Manages client input.
+const cameraControl = new CameraManager(camera, player, offset, inputManager); // Manager for game camera.
 const playerMovement = new ClientPlayerMovement(player, camera, inputManager, physics, 4, JUMP_FORCE); // Manages player movement.
 
 document.body.addEventListener('click', () => document.body.requestPointerLock());
