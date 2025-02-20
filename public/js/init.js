@@ -91,7 +91,7 @@ class Game
             this.textureAtlas.wrapT = THREE.RepeatWrapping;
             this.textureAtlas.magFilter = THREE.NearestFilter;
             this.textureAtlas.generateMipmaps = true;
-            this.textureAtlas.minFilter = THREE.LinearMipMapLinearFilter;
+            this.textureAtlas.minFilter = THREE.NearestFilter;
         }
         
         const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -102,40 +102,73 @@ class Game
             },
             vertexShader: `
                 varying vec2 vUv;
+                varying vec3 vNormal;
                 attribute float blockId;
                 varying float vBlockId;
                 void main() {
                     vUv = uv;
+                    vNormal = normal;
                     vBlockId = blockId;
                     gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
                 }
             `,
             fragmentShader: `
                 uniform sampler2D textureAtlas;
-
+                varying vec3 vNormal;
                 varying vec2 vUv;
                 varying float vBlockId;
 
                 void main() {
-                    float lowerLeftU;
-                    float lowerLeftV;
-                    float upperRightU;
-                    float upperRightV;
+                    float lowerLeftU, lowerLeftV, upperRightU, upperRightV;
+                    float bWidth = 0.1;
+                    float bHeight = 0.0625;
+                    float col;
+                    float row;
+
                     if(vBlockId == 1.0){
-                        lowerLeftU = 0.2;
-                        lowerLeftV = 0.75;
-                        upperRightU = 0.3;
-                        upperRightV = 0.8125;
-                    } else {
-                        lowerLeftU = 0.1;
-                        lowerLeftV = 0.8125;
-                        upperRightU = 0.2;
-                        upperRightV = 0.875;
+                        col = 5.0;
+                        row = 4.0;
+                    } else if(vBlockId == 2.0) {
+                        if(abs(vNormal.y) > 0.5){
+                            if(vNormal.y > 0.0){
+                                col = 2.0;
+                                row = 3.0;
+                            } else {
+                                col = 1.0;
+                                row = 2.0;
+                            }
+                        } else if(abs(vNormal.x) > 0.5){
+                            col = 1.0;
+                            row = 3.0;
+                        } else if(abs(vNormal.z) > 0.5){
+                            col = 1.0;
+                            row = 3.0;
+                        }
+                    } else if(vBlockId == 3.0) {
+                        col = 1.0;
+                        row = 2.0;
+                    } else if(vBlockId == 4.0) {
+                        col = 4.0;
+                        row = 6.0;
+                    } else if(vBlockId == 5.0) {
+                        col = 9.0;
+                        row = 6.0;
+                    } else if(vBlockId == 6.0) {
+                        col = 5.0;
+                        row = 7.0;
+                    } else if(vBlockId == 7.0) {
+                        col = 7.0;
+                        row = 3.0;
                     }
+
+                    lowerLeftU = col * bWidth;
+                    upperRightU = (col + 1.0) * bWidth;
+                    lowerLeftV = 1.0 - (row * bHeight);
+                    upperRightV = 1.0 - ((row + 1.0) * bHeight);
 
                     vec2 uv = vec2(
                         lowerLeftU + vUv.x * (upperRightU - lowerLeftU), 
-                        lowerLeftV + vUv.y * (upperRightV - lowerLeftV)  
+                        lowerLeftV + (1.0 - vUv.y) * (upperRightV - lowerLeftV)  
                     );
                     gl_FragColor = texture2D(textureAtlas, uv);
                 }
