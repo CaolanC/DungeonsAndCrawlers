@@ -45,6 +45,7 @@ class Game
         this.network_manager = network_manager;
         this.tick_counter = 0;
         this.setup()
+
     }
 
     async start() {
@@ -82,31 +83,75 @@ class Game
         const chunkY = ypos * size;
         const chunkZ = zpos * size;
 
-        if (!this.textureLoader) {
+        if(!this.textureLoader){
             this.textureLoader = new THREE.TextureLoader();
-        }
-        if (!this.textureAtlas) {
-            this.textureAtlas = this.textureLoader.load('https://threejs.org/examples/textures/crate.gif');
+
+            this.textureAtlas = this.textureLoader.load('textures/tilemap.png');
             this.textureAtlas.wrapS = THREE.RepeatWrapping;
             this.textureAtlas.wrapT = THREE.RepeatWrapping;
             this.textureAtlas.magFilter = THREE.NearestFilter;
             this.textureAtlas.generateMipmaps = true;
             this.textureAtlas.minFilter = THREE.LinearMipMapLinearFilter;
         }
-        if (!this.blockGeometry) {
-            this.blockGeometry = new THREE.BoxGeometry(1, 1, 1);
-        }
-        if (!this.blockMaterial) {
-            this.blockMaterial = new THREE.MeshStandardMaterial({ map: this.textureAtlas, side: THREE.DoubleSide });
-        }
+        
+        const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+    
+        const blockMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                textureAtlas: { value: this.textureAtlas },
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                attribute float blockId;
+                varying float vBlockId;
+                void main() {
+                    vUv = uv;
+                    vBlockId = blockId;
+                    gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D textureAtlas;
+
+                varying vec2 vUv;
+                varying float vBlockId;
+
+                void main() {
+                    float lowerLeftU;
+                    float lowerLeftV;
+                    float upperRightU;
+                    float upperRightV;
+                    if(vBlockId == 1.0){
+                        lowerLeftU = 0.2;
+                        lowerLeftV = 0.75;
+                        upperRightU = 0.3;
+                        upperRightV = 0.8125;
+                    } else if(vBlockId == 2.0) {
+                        lowerLeftU = 0.1;
+                        lowerLeftV = 0.8125;
+                        upperRightU = 0.2;
+                        upperRightV = 0.875;
+                    }
+
+                    vec2 uv = vec2(
+                        lowerLeftU + vUv.x * (upperRightU - lowerLeftU), 
+                        lowerLeftV + vUv.y * (upperRightV - lowerLeftV)  
+                    );
+                    gl_FragColor = texture2D(textureAtlas, uv);
+                }
+            `,
+        });
+        
 
         const numBlocks = size * size * size; // Maximum possible blocks
-        const instancedMesh = new THREE.InstancedMesh(this.blockGeometry, this.blockMaterial, numBlocks);
+        const instancedMesh = new THREE.InstancedMesh(blockGeometry, blockMaterial, numBlocks);
         // instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
 
         let index = 0;
         const matrix = new THREE.Matrix4();
+
+        const blockIds = new Float32Array(numBlocks);
 
         for (let x = 0; x < size; x++) {
             for (let y = 0; y < size; y++) {
@@ -116,19 +161,23 @@ class Game
                     let worldZ = chunkZ + z;
                     const block_id = chunk.at(x, y, z);
 
-                    if (block_id == 1) {
+                    if (block_id !== 0) {
+
                         matrix.setPosition(worldX, worldY, worldZ);
-                        instancedMesh.setMatrixAt(index++, matrix);
+                        instancedMesh.setMatrixAt(index, matrix);
+                        blockIds[index] = Math.random() < 0.5 ? 1.0 : 2.0;
+                        index++
 
                     }
                 }
             }
         }
                     
-        // Update instance count
+        blockGeometry.setAttribute('blockId', new THREE.InstancedBufferAttribute(blockIds, 1));
         instancedMesh.count = index;
         instancedMesh.instanceMatrix.needsUpdate = true;
         instancedMesh.frustumCulled = true;
+
 
         if(instancedMesh.count !== 0){
             this.chunkManager.storeChunk(location, chunk, instancedMesh );
