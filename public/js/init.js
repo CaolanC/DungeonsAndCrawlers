@@ -193,7 +193,7 @@ class Game
 
         const numBlocks = size * size * size; // Maximum possible blocks
         const instancedMesh = new THREE.InstancedMesh(blockGeometry, blockMaterial, numBlocks);
-        // instancedMesh.castShadow = true;
+        instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
 
         let index = 0;
