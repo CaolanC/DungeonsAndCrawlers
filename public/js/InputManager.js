@@ -1,8 +1,8 @@
 
 export class InputManager {
-    constructor(cameraManager) {
-        this.cameraManager = cameraManager;
+    constructor() {
         this.move = { forward: false, backward: false, left: false, right: false, jump: false };
+        this.rotation = { left: false, right: false, up: false, down: false};
 
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
@@ -15,16 +15,18 @@ export class InputManager {
             case 'a': this.move.left = true; break;
             case 'd': this.move.right = true; break; 
             case ' ': this.move.jump = true; break;
-            case 'ArrowLeft': 
-                if (this.cameraManager.getRotating()) { break; }
-                this.cameraManager.setTargetOffset(new THREE.Vector3(0, 1, 0), Math.PI / 2); // rotates camera left by 90 degrees
-                this.cameraManager.setIsRotating(true);
-                break;
-            case 'ArrowRight': 
-                if (this.cameraManager.getRotating()) { break; } 
-                this.cameraManager.setTargetOffset(new THREE.Vector3(0, 1, 0), -Math.PI / 2); // rotates camera right by 90 degrees
-                this.cameraManager.setIsRotating(true);
-                break;
+            case 'ArrowLeft': this.rotation.left = true; break;
+                // if (this.cameraManager.getRotating()) { break; }
+                // this.cameraManager.setTargetOffset(new THREE.Vector3(0, 1, 0), Math.PI / 2); // rotates camera left by 90 degrees
+                // this.cameraManager.setIsRotating(true);
+                // break;
+            case 'ArrowRight': this.rotation.right = true; break;
+                // if (this.cameraManager.getRotating()) { break; } 
+                // this.cameraManager.setTargetOffset(new THREE.Vector3(0, 1, 0), -Math.PI / 2); // rotates camera right by 90 degrees
+                // this.cameraManager.setIsRotating(true);
+                // break;
+            case 'ArrowUp': this.rotation.up = true; break;
+            case 'ArrowDown': this.rotation.down = true; break;
         }
     }
 
@@ -35,11 +37,19 @@ export class InputManager {
             case 'a': this.move.left = false; break;
             case 'd': this.move.right = false; break;
             case ' ': this.move.jump = false; break;
+            case 'ArrowLeft': this.rotation.left = false; break;
+            case 'ArrowRight': this.rotation.right = false; break;
+            case 'ArrowUp': this.rotation.up = false; break;
+            case 'ArrowDown': this.rotation.down = false; break;
         }
     }
 
     getMoveState() {
         return this.move;
+    }
+
+    getRotationState() {
+        return this.rotation;
     }
 
 }
