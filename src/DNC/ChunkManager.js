@@ -56,10 +56,7 @@ export class ChunkManager {
 
                     if (worldY <= terrainHeight) {
                         let block = BlockRegistry.blocks.get(biome.layers.surface);
-                        if (block != 2) {
-                            console.log(block);
-                        }
-                        chunk.set(1, x, y, z); // Solid block
+                        chunk.set(block, x, y, z); 
                     } else {
                         chunk.set(0, x, y, z); // Air
                     }

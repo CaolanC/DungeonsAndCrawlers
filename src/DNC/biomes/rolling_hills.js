@@ -2,7 +2,7 @@ export default {
     name: "Rolling_Hills",
     mod_namespace: "DNC",
 	layers: {
-        surface: "DNC:Grass",
+        surface: "DNC:Stone",
     },
 	moisture: 0.3,
 	temperature: 0.3,

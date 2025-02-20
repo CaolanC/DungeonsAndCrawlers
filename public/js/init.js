@@ -126,7 +126,7 @@ class Game
                         lowerLeftV = 0.75;
                         upperRightU = 0.3;
                         upperRightV = 0.8125;
-                    } else if(vBlockId == 2.0) {
+                    } else {
                         lowerLeftU = 0.1;
                         lowerLeftV = 0.8125;
                         upperRightU = 0.2;
@@ -165,8 +165,8 @@ class Game
 
                         matrix.setPosition(worldX, worldY, worldZ);
                         instancedMesh.setMatrixAt(index, matrix);
-                        blockIds[index] = Math.random() < 0.5 ? 1.0 : 2.0;
-                        index++
+                        blockIds[index] = block_id; //Math.random() < 0.5 ? 1.0 : 2.0;
+                        index++;
 
                     }
                 }

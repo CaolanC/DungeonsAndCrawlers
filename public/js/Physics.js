@@ -55,7 +55,7 @@ export class Physics {
 
                     if(chunk){
                         const blockID = chunk.at(localBlockX, localBlockY, localBlockZ);
-                        if(blockID === 1){
+                        if(blockID != 0){
                             potentialCollisions.push(new THREE.Vector3(x, y, z));
                             this.addCollisionHelper(new THREE.Vector3(x, y, z));
                         }
