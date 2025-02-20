@@ -76,6 +76,8 @@ export function perlinNoise2D(x, y) { // We can turn this into a class later. Ou
 
 export function perlinNoise2DNorm(x, y) { // Normalised the output so the range is 0 to 1.
     return (perlinNoise2D(x, y) + 1) / 2;
+    //console.log(noise_value);
+    //return noise_value;
 }
 
 // This is kind of tricky, it's based on ken's improved noise but it's going to be hard to debug and verify that it's working until we can visualise it. I understand most of the math, but even a small typo could throw it all off.

@@ -1,5 +1,6 @@
 export default {
 	name: "Air",
+    id: 0,
 	mod_namespace: "DNC",
 	client: {
 		properties: {

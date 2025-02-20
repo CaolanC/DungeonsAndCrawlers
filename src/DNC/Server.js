@@ -14,6 +14,7 @@ import { BiomeRegistry } from "./BiomeRegistry.js";
 import { Player } from "./Player.js";
 import { Chunk } from "./Chunk.js";
 import { DNC } from "./Config.js";
+import { BiomeMap } from "./BiomeMap.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -83,14 +84,19 @@ export class Server {
     }
 
 
-    start() {
+    async start() {
 
         this.initApp();
         this.initSockets();
+        await this.initRegistries();
         this.gameLoop();
         this.server.listen(this.port, () => {
             console.log(`PORT: ${this.port}`);
         });
+    }
+
+    async initRegistries() {
+        await BiomeRegistry.RegisterDefaultBiomes();
     }
 
     getDefaultSpawnPoint() {
