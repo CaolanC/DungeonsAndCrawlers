@@ -96,104 +96,105 @@ class Game
         
         const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
     
-        const blockMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                textureAtlas: { value: this.textureAtlas },
-                playerPosition: { value: this.player.getPosition() },
-            },
-            vertexShader: `
-                varying vec2 vUv;
-                varying vec3 vNormal;
-                attribute float blockId;
-                varying float vBlockId;
-                varying vec3 vWorldPosition;
-                void main() {
-                    vUv = uv;
-                    vNormal = normal;
-                    vBlockId = blockId;
-                    vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position, 1.0);
-                    vWorldPosition = worldPosition.xyz;
-                    gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D textureAtlas;
-                uniform vec3 playerPosition;
-                varying vec3 vNormal;
-                varying vec2 vUv;
-                varying float vBlockId;
-                varying vec3 vWorldPosition;
+        if(!this.blockMaterial){
+            this.blockMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    textureAtlas: { value: this.textureAtlas },
+                    playerPosition: { value: new THREE.Vector3() },
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    varying vec3 vNormal;
+                    attribute float blockId;
+                    varying float vBlockId;
+                    varying vec3 vWorldPosition;
+                    void main() {
+                        vUv = uv;
+                        vNormal = normal;
+                        vBlockId = blockId;
+                        vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position, 1.0);
+                        vWorldPosition = worldPosition.xyz;
+                        gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform sampler2D textureAtlas;
+                    uniform vec3 playerPosition;
+                    varying vec3 vNormal;
+                    varying vec2 vUv;
+                    varying float vBlockId;
+                    varying vec3 vWorldPosition;
 
-                void main() {
-                    float lowerLeftU, lowerLeftV, upperRightU, upperRightV;
-                    float bWidth = 0.1;
-                    float bHeight = 0.0625;
-                    float col;
-                    float row;
+                    void main() {
+                        float lowerLeftU, lowerLeftV, upperRightU, upperRightV;
+                        float bWidth = 0.1;
+                        float bHeight = 0.0625;
+                        float col;
+                        float row;
 
-                    if(vBlockId == 1.0){
-                        col = 5.0;
-                        row = 4.0;
-                    } else if(vBlockId == 2.0) {
-                        if(abs(vNormal.y) > 0.5){
-                            if(vNormal.y > 0.0){
-                                col = 2.0;
-                                row = 3.0;
-                            } else {
+                        if(vBlockId == 1.0){
+                            col = 5.0;
+                            row = 4.0;
+                        } else if(vBlockId == 2.0) {
+                            if(abs(vNormal.y) > 0.5){
+                                if(vNormal.y > 0.0){
+                                    col = 2.0;
+                                    row = 3.0;
+                                } else {
+                                    col = 1.0;
+                                    row = 2.0;
+                                }
+                            } else if(abs(vNormal.x) > 0.5){
                                 col = 1.0;
-                                row = 2.0;
+                                row = 3.0;
+                            } else if(abs(vNormal.z) > 0.5){
+                                col = 1.0;
+                                row = 3.0;
                             }
-                        } else if(abs(vNormal.x) > 0.5){
+                        } else if(vBlockId == 3.0) {
                             col = 1.0;
-                            row = 3.0;
-                        } else if(abs(vNormal.z) > 0.5){
-                            col = 1.0;
+                            row = 2.0;
+                        } else if(vBlockId == 4.0) {
+                            col = 4.0;
+                            row = 6.0;
+                        } else if(vBlockId == 5.0) {
+                            col = 9.0;
+                            row = 6.0;
+                        } else if(vBlockId == 6.0) {
+                            col = 5.0;
+                            row = 7.0;
+                        } else if(vBlockId == 7.0) {
+                            col = 7.0;
                             row = 3.0;
                         }
-                    } else if(vBlockId == 3.0) {
-                        col = 1.0;
-                        row = 2.0;
-                    } else if(vBlockId == 4.0) {
-                        col = 4.0;
-                        row = 6.0;
-                    } else if(vBlockId == 5.0) {
-                        col = 9.0;
-                        row = 6.0;
-                    } else if(vBlockId == 6.0) {
-                        col = 5.0;
-                        row = 7.0;
-                    } else if(vBlockId == 7.0) {
-                        col = 7.0;
-                        row = 3.0;
+
+                        lowerLeftU = col * bWidth;
+                        upperRightU = (col + 1.0) * bWidth;
+                        lowerLeftV = 1.0 - (row * bHeight);
+                        upperRightV = 1.0 - ((row + 1.0) * bHeight);
+
+                        vec2 uv = vec2(
+                            lowerLeftU + vUv.x * (upperRightU - lowerLeftU), 
+                            lowerLeftV + (1.0 - vUv.y) * (upperRightV - lowerLeftV)  
+                        );
+
+                        vec4 worldtextures = texture2D(textureAtlas, uv);
+
+                        float distance = length(vWorldPosition - playerPosition);
+
+                        float maxDistance = 50.0; 
+                        float darkness = clamp(distance / maxDistance, 0.0, 1.0); 
+                        vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness);
+
+                        gl_FragColor = vec4(darkenedColor, worldtextures.a);
                     }
-
-                    lowerLeftU = col * bWidth;
-                    upperRightU = (col + 1.0) * bWidth;
-                    lowerLeftV = 1.0 - (row * bHeight);
-                    upperRightV = 1.0 - ((row + 1.0) * bHeight);
-
-                    vec2 uv = vec2(
-                        lowerLeftU + vUv.x * (upperRightU - lowerLeftU), 
-                        lowerLeftV + (1.0 - vUv.y) * (upperRightV - lowerLeftV)  
-                    );
-
-                    vec4 worldtextures = texture2D(textureAtlas, uv);
-
-                    float distance = length(vWorldPosition - playerPosition);
-
-                    float maxDistance = 50.0; 
-                    float darkness = clamp(distance / maxDistance, 0.0, 1.0); 
-                    vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness);
-
-                    gl_FragColor = vec4(darkenedColor, worldtextures.a);
-                }
-            `,
-        });
-        
+                `,
+            });
+        }
 
         const numBlocks = size * size * size; // Maximum possible blocks
-        const instancedMesh = new THREE.InstancedMesh(blockGeometry, blockMaterial, numBlocks);
-        instancedMesh.castShadow = true;
+        const instancedMesh = new THREE.InstancedMesh(blockGeometry, this.blockMaterial, numBlocks);
+        // instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
 
         let index = 0;
@@ -289,11 +290,9 @@ function animate() {
     let currentTime = Date.now();
     let deltaTime = (currentTime - prevTime) / 1000;
     requestAnimationFrame(animate);
-    // playerMovement.checkGrounded();
     playerMovement.updateMovement(deltaTime);
     physics.update(deltaTime, player);
-    // world.fixedStep();
-    // player.updatePos();
+    game.blockMaterial.uniforms.playerPosition.value.copy(player.getPosition());
     cameraControl.update();
     renderer.render(scene, camera.camera);
     prevTime = currentTime;
