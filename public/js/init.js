@@ -87,10 +87,10 @@ class Game
             this.textureLoader = new THREE.TextureLoader();
 
             this.textureAtlas = this.textureLoader.load('textures/tilemap.png');
-            this.textureAtlas.wrapS = THREE.RepeatWrapping;
-            this.textureAtlas.wrapT = THREE.RepeatWrapping;
+            this.textureAtlas.wrapS = THREE.ClampToEdgeWrapping;
+            this.textureAtlas.wrapT = THREE.ClampToEdgeWrapping;
             this.textureAtlas.magFilter = THREE.NearestFilter;
-            this.textureAtlas.generateMipmaps = true;
+            // this.textureAtlas.generateMipmaps = true;
             this.textureAtlas.minFilter = THREE.NearestFilter;
         }
         
@@ -99,24 +99,30 @@ class Game
         const blockMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 textureAtlas: { value: this.textureAtlas },
+                playerPosition: { value: this.player.getPosition() },
             },
             vertexShader: `
                 varying vec2 vUv;
                 varying vec3 vNormal;
                 attribute float blockId;
                 varying float vBlockId;
+                varying vec3 vWorldPosition;
                 void main() {
                     vUv = uv;
                     vNormal = normal;
                     vBlockId = blockId;
+                    vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position, 1.0);
+                    vWorldPosition = worldPosition.xyz;
                     gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
                 }
             `,
             fragmentShader: `
                 uniform sampler2D textureAtlas;
+                uniform vec3 playerPosition;
                 varying vec3 vNormal;
                 varying vec2 vUv;
                 varying float vBlockId;
+                varying vec3 vWorldPosition;
 
                 void main() {
                     float lowerLeftU, lowerLeftV, upperRightU, upperRightV;
@@ -170,7 +176,16 @@ class Game
                         lowerLeftU + vUv.x * (upperRightU - lowerLeftU), 
                         lowerLeftV + (1.0 - vUv.y) * (upperRightV - lowerLeftV)  
                     );
-                    gl_FragColor = texture2D(textureAtlas, uv);
+
+                    vec4 worldtextures = texture2D(textureAtlas, uv);
+
+                    float distance = length(vWorldPosition - playerPosition);
+
+                    float maxDistance = 50.0; 
+                    float darkness = clamp(distance / maxDistance, 0.0, 1.0); 
+                    vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness);
+
+                    gl_FragColor = vec4(darkenedColor, worldtextures.a);
                 }
             `,
         });
