@@ -138,6 +138,8 @@ export class Server {
 
             player.loaded_chunks = player.loaded_chunks.union(new_chunks);
             player.pending_position = null;
+
+            this.sendOtherPlayers(player);
         });
         // Game state calls and such
     }
@@ -147,6 +149,26 @@ export class Server {
         if (player.websocket_connection) {
             player.websocket_connection.send(JSON.stringify(message));
         }
+    }
+
+    sendOtherPlayers(player) {
+
+        this.playerManager.getPlayers().forEach((other_player) => {
+            if (player.display_name == other_player.display_name) {
+                return;
+            }
+
+            const message = { 
+                type: "other_player", 
+                player_name: other_player.display_name,
+                player_position: other_player.position,
+            };
+
+            if (player.websocket_connection) {
+                player.websocket_connection.send(JSON.stringify(message));
+            }
+            
+        });
     }
 
     initApp() {
