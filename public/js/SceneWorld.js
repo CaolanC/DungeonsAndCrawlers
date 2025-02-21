@@ -33,10 +33,6 @@ export class SceneWorld {
         return this.scene;
     }
 
-    // getWorld() {
-    //     return this.world;
-    // }
-
     getRender() {
         return this.renderer;
     }

@@ -1,7 +1,5 @@
 //import * as THREE from 'three';
 
-import * as BufferGeometryUtils from "https://cdn.jsdelivr.net/npm/three/examples/js/utils/BufferGeometryUtils.js";
-import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
 import { SceneWorld } from "./SceneWorld.js";
 import { Camera } from "./Camera.js";
 import { CameraManager } from "./CameraManager.js";
@@ -66,7 +64,6 @@ class Game
         this.player = player;
         this.sceneWorld = sceneWorld;
         this.scene = sceneWorld.getScene();
-        // this.world = world;
         this.chunkManager = chunkManager
         this.network_manager = network_manager;
         this.tick_counter = 0;
@@ -127,7 +124,6 @@ class Game
             this.textureAtlas.wrapS = THREE.ClampToEdgeWrapping;
             this.textureAtlas.wrapT = THREE.ClampToEdgeWrapping;
             this.textureAtlas.magFilter = THREE.NearestFilter;
-            // this.textureAtlas.generateMipmaps = true;
             this.textureAtlas.minFilter = THREE.NearestFilter;
         }
         
@@ -221,7 +217,7 @@ class Game
 
                         float maxDistance = 50.0; 
                         float darkness = clamp(distance / maxDistance, 0.0, 1.0); 
-                        vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness);
+                        vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness * 0.5);
 
                         gl_FragColor = vec4(darkenedColor, worldtextures.a);
                     }
@@ -231,7 +227,6 @@ class Game
 
         const numBlocks = size * size * size; // Maximum possible blocks
         const instancedMesh = new THREE.InstancedMesh(blockGeometry, this.blockMaterial, numBlocks);
-        // instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
 
         let index = 0;
@@ -296,9 +291,8 @@ class Game
 
 // Class variables.
 
-const sceneWorld = new SceneWorld(); // Sets up scene and world
+const sceneWorld = new SceneWorld(); // Sets up scene
 const scene = sceneWorld.getScene(); // Grabs scene, world and renderer from SceneWorld class
-// const world = sceneWorld.getWorld();
 const renderer = sceneWorld.getRender();
 
 // Chunk map
@@ -315,7 +309,7 @@ const camera = new Camera(scene, 10, innerWidth, window.innerHeight); // Sets up
 
 const inputManager = new InputManager(); // Manages client input.
 const cameraControl = new CameraManager(camera, player, offset, inputManager); // Manager for game camera.
-const playerMovement = new ClientPlayerMovement(player, camera, inputManager, physics, 4, JUMP_FORCE); // Manages player movement.
+const playerMovement = new ClientPlayerMovement(player, camera, inputManager, physics, SPEED, JUMP_FORCE); // Manages player movement.
 
 document.body.addEventListener('click', () => document.body.requestPointerLock());
 
