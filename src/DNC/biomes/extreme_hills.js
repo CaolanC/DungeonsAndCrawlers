@@ -5,7 +5,7 @@ export default {
         surface: "DNC:Ice",
         subsurface: "DNC:Stone",
     },
-	moisture: 0.4,
-	temperature: 0.4,
+	moisture: 0.7,
+	temperature: 0.7,
     terrain_amplitude: 32
 };
