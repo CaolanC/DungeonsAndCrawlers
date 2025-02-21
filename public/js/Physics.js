@@ -1,14 +1,4 @@
-
-const collisionMat = new THREE.MeshBasicMaterial({
-    color: 0xff0000,
-    transparent: true,
-    opacity: 0.2
-})
-
-const collisionGeometry = new THREE.BoxGeometry(1.001, 1.001, 1.001);
-
-const contactMaterial = new THREE.MeshBasicMaterial({ wireframe: true, color: 0x00ff00 });
-const contactGeometry = new THREE.SphereGeometry(0.05, 6, 6);
+// Some logic on page taken from the following source: https://www.youtube.com/watch?v=_aK-1L-GC6I
 
 export class Physics {
     constructor(chunks, CHUNK_SIZE, scene) {
@@ -54,7 +44,6 @@ export class Physics {
                         const blockID = chunk.at(localBlockX, localBlockY, localBlockZ);
                         if(blockID != 0){
                             potentialCollisions.push(new THREE.Vector3(x, y, z));
-                            this.addCollisionHelper(new THREE.Vector3(x, y, z));
                         }
                     }
                 }
@@ -107,7 +96,6 @@ export class Physics {
                     normal: normal,
                 });
 
-                this.addContactPointerHelper(closestPoint);
             }
         }
 
@@ -153,17 +141,4 @@ export class Physics {
         }
     }
 
-    // source = https://www.youtube.com/watch?v=_aK-1L-GC6I
-
-    addCollisionHelper(block){
-        const blockMesh = new THREE.Mesh(collisionGeometry, collisionMat);
-        blockMesh.position.copy(block);
-        this.helpers.add(blockMesh);
-    }
-
-    addContactPointerHelper(p) {
-        const contactMesh = new THREE.Mesh(contactGeometry, contactMaterial);
-        contactMesh.position.copy(p);
-        this.helpers.add(contactMesh);
-      }
 }
