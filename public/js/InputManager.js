@@ -16,15 +16,7 @@ export class InputManager {
             case 'd': this.move.right = true; break; 
             case ' ': this.move.jump = true; break;
             case 'ArrowLeft': this.rotation.left = true; break;
-                // if (this.cameraManager.getRotating()) { break; }
-                // this.cameraManager.setTargetOffset(new THREE.Vector3(0, 1, 0), Math.PI / 2); // rotates camera left by 90 degrees
-                // this.cameraManager.setIsRotating(true);
-                // break;
             case 'ArrowRight': this.rotation.right = true; break;
-                // if (this.cameraManager.getRotating()) { break; } 
-                // this.cameraManager.setTargetOffset(new THREE.Vector3(0, 1, 0), -Math.PI / 2); // rotates camera right by 90 degrees
-                // this.cameraManager.setIsRotating(true);
-                // break;
             case 'ArrowUp': this.rotation.up = true; break;
             case 'ArrowDown': this.rotation.down = true; break;
         }

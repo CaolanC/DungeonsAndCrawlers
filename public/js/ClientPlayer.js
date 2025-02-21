@@ -1,4 +1,3 @@
-import * as CANNON from "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/+esm";
 
 const CHUNK_SIZE = 16;
 
@@ -36,9 +35,8 @@ class ClientChunkManager
 
 export class ClientPlayer
 {
-    constructor(sceneWorld, username){ // scene and world of threejs render
+    constructor(sceneWorld, username){ // scene of threejs render
         this.scene = sceneWorld.getScene();
-        // this.world = sceneWorld.getWorld();
         this.username = username;
         this.onGround = false;
 

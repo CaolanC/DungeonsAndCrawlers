@@ -5,7 +5,6 @@
 export class ChunkRendererManager {
     constructor(scene) {
         this.scene = scene;
-        // this.world = world;
         this.chunkMap = new Map();
     }
 

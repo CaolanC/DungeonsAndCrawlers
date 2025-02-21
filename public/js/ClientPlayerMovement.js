@@ -43,7 +43,6 @@ export class ClientPlayerMovement {
 
         const newPos = this.player.getPosition().clone().add(this.player.velocity.clone());
         this.player.playercube.position.copy(newPos);
-        // this.player.boundsHelper.position.copy(this.player.playercube.position);
 
     }
 }
