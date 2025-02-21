@@ -217,7 +217,7 @@ class Game
 
                         float maxDistance = 50.0; 
                         float darkness = clamp(distance / maxDistance, 0.0, 1.0); 
-                        vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness * 0.5);
+                        vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness * 0.8);
 
                         gl_FragColor = vec4(darkenedColor, worldtextures.a);
                     }
