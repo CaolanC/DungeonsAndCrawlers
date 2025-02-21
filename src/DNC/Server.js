@@ -12,6 +12,7 @@ import { PlayerManager } from "./PlayerManager.js";
 import { ChunkManager } from "./ChunkManager.js";
 import { BiomeRegistry } from "./BiomeRegistry.js";
 import { BlockRegistry } from "./BlockRegistry.js";
+import { NPCRegistry } from "./NPCRegistry.js";
 import { Player } from "./Player.js";
 import { Chunk } from "./Chunk.js";
 import { DNC } from "./Config.js";

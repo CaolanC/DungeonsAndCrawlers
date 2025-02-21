@@ -76,7 +76,7 @@ export class ChunkManager {
     }
 
     generateTerrainHeight(x, z, biome) {
-        let height = perlinNoise2D(x * 0.05, z * 0.05) * biome.terrain_amplitude; // Scale from -3 to 3
+        let height = perlinNoise2D(x * biome.terrain_scale, z * biome.terrain_scale) * biome.terrain_amplitude; // Scale from -3 to 3
         return Math.floor(height); // Ensure integer values
     }
 

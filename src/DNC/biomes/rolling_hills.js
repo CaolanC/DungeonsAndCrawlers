@@ -7,5 +7,6 @@ export default {
     },
 	moisture: 0.3,
 	temperature: 0.3,
-    terrain_amplitude: 10
+    terrain_amplitude: 10,
+    terrain_scale: 0.06
 };
