@@ -22,8 +22,13 @@ export class ChunkManager {
                 if (!this.generated_chunks.has(chunk_id)) {
                     let new_chunk = this.generateChunk(chunk_id);
                     this.generated_chunks.set(chunk_id, new_chunk);
+                    player.loaded_chunks.add(chunk_id);
                     chunks.add(new_chunk);
                 } else {
+                    let chunk = this.generated_chunks.get(chunk_id);
+                    player.loaded_chunks.add(chunk_id);
+                    //console.log(chunk);
+                    chunks.add(chunk);
                     // Load the chunk from storage
                 }
             }
@@ -54,8 +59,11 @@ export class ChunkManager {
                 for (let y = 0; y < CHUNK_SIZE; y++) {
                     let worldY = cy * CHUNK_SIZE + y;
 
-                    if (worldY <= terrainHeight) {
+                    if (worldY == terrainHeight) {
                         let block = BlockRegistry.blocks.get(biome.layers.surface);
+                        chunk.set(block, x, y, z); 
+                    } else if (worldY < terrainHeight) {
+                        let block = BlockRegistry.blocks.get(biome.layers.subsurface);
                         chunk.set(block, x, y, z); 
                     } else {
                         chunk.set(0, x, y, z); // Air
@@ -90,6 +98,6 @@ export class ChunkManager {
             }
         }
 
-    return nearbyChunks;
+        return nearbyChunks;
     }
 }

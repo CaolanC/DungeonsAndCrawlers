@@ -100,7 +100,6 @@ class Game
         this.network_manager.on("other_player", (data) => {
             const name = data.player_name;
             const position = data.player_position;
-            console.log(data);
             if (!this.player_bodies.has(name)) {
                 this.player_bodies.set(name, new Player(this.scene, name, position));
             }
@@ -249,7 +248,6 @@ class Game
                     const block_id = chunk.at(x, y, z);
 
                     if (block_id !== 0) {
-                        console.log("it makes no sense");
                         matrix.setPosition(worldX, worldY, worldZ);
                         instancedMesh.setMatrixAt(index, matrix);
                         blockIds[index] = block_id;
@@ -313,7 +311,7 @@ const username = urlParams.get('username');
 
 const player = new ClientPlayer(sceneWorld, username); // Sets up player from client.
 const offset = new THREE.Vector3(20,20,20);
-const camera = new Camera(scene, 10, (window.innerWidth / window.innerHeight)); // Sets up game camera.
+const camera = new Camera(scene, 10, innerWidth, window.innerHeight); // Sets up game camera.
 
 const inputManager = new InputManager(); // Manages client input.
 const cameraControl = new CameraManager(camera, player, offset, inputManager); // Manager for game camera.

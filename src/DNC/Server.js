@@ -99,7 +99,6 @@ export class Server {
     async initRegistries() {
         await BiomeRegistry.RegisterDefaultBiomes();
         await BlockRegistry.RegisterDefaultBlocks();
-        //console.log(BlockRegistry.blocks);
     }
 
     getDefaultSpawnPoint() {

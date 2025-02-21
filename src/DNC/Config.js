@@ -6,7 +6,7 @@ export const DNC = {
 		// into the block itself. TODO: Consider adding metadata to air with the extra bits.
 		STONE: 1,
 	},
-    FRAMERATE: 10,
+    FRAMERATE: 60,
     RENDER_DISTANCE: 3,
 
     get FRAME_DURATION() {

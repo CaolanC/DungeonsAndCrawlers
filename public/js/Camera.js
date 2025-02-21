@@ -3,16 +3,15 @@
 // Camera is in isometric style. Follows the player entity.
 
 export class Camera {
-    constructor(scene, zoom, aspect) {
+    constructor(scene, zoom, width, height) {
         this.scene = scene;
         this.zoom = zoom;
-        this.aspect = aspect;
-        this.camera = new THREE.OrthographicCamera(
-            -this.zoom * this.aspect, 
-            this.zoom * this.aspect, 
-            this.zoom, 
-            -this.zoom, 
-            0.1, 1000,
+        //this.aspect = aspect;
+        this.camera = new THREE.PerspectiveCamera(
+            45, 
+            width / height, 
+            1, 
+            1000 
         );
         this.camera.position.set(20, 20, 20);
         this.camera.lookAt(new THREE.Vector3(0,0,0));
