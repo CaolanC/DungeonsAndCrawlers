@@ -47,9 +47,6 @@ export class Physics {
                     const localBlockY = blockY < 0 ? this.CHUNK_SIZE + blockY : blockY;
                     const localBlockZ = blockZ < 0 ? this.CHUNK_SIZE + blockZ : blockZ;
 
-                    // console.log("Chunk co-ordinates: ", chunkX, chunkY, chunkZ);
-                    // console.log("Local chunk co-ordinates: ", blockX, blockY, blockZ);
-
                     const key = [chunkX, chunkY, chunkZ]
                     const chunk = this.chunks.getChunk(key);
 
@@ -66,7 +63,6 @@ export class Physics {
 
         return potentialCollisions;
 
-        // console.log("Broadphase collisions detected: ", potentialCollisions.length, "Collisions :", potentialCollisions, "min values: ", minX, maxX, minY, maxY, minZ, maxZ);
     }
 
     // Detects actual collisions
@@ -115,7 +111,6 @@ export class Physics {
             }
         }
 
-        // console.log("Collisions detected: ", collisions.length, "collisions: ", collisions);
         return collisions;
     }
 
