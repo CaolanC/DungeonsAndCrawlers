@@ -43,7 +43,7 @@ export class ClientPlayer
         this.velocity = new THREE.Vector3();
 
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshStandardMaterial({ wireframe: true, color: 0xffffff });
+        const material = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }); // Cube is given random color
         this.playercube = new THREE.Mesh(geometry, material);
         this.playercube.castShadow = true;
         this.playercube.position.set(0, 20, 0);
