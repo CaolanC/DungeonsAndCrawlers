@@ -10,11 +10,12 @@ import { NetworkManager } from "./NetworkManager.js";
 import { Chunk } from "./Chunk.js";
 import { ChunkRendererManager } from "./ChunkRendererManager.js";
 import { Physics } from "./Physics.js";
+import { Sky } from "./Sky.js";
 
 console.log("Working in public");
 
 const JUMP_FORCE = 5; // Velocity applied on jump
-const SPEED = 4; // Velocity applied on WASD movement
+const SPEED = 12; // Velocity applied on WASD movement
 
 const DNC = {
 	CHUNK_SIZE: 16,
@@ -164,6 +165,7 @@ class Game
                         float bHeight = 0.0625;
                         float col;
                         float row;
+                        float side_darkening_mod = 1.0;
 
                         if(vBlockId == 1.0){
                             col = 5.0;
@@ -201,6 +203,14 @@ class Game
                             row = 3.0;
                         }
 
+                        if(abs(vNormal.y) > 0.5){
+                            side_darkening_mod = 0.8;
+                        } else if(abs(vNormal.x) > 0.5){
+                            side_darkening_mod = 0.65;
+                        } else if(abs(vNormal.z) > 0.5){
+                            side_darkening_mod = 0.5;
+                        }
+
                         lowerLeftU = col * bWidth;
                         upperRightU = (col + 1.0) * bWidth;
                         lowerLeftV = 1.0 - (row * bHeight);
@@ -217,7 +227,7 @@ class Game
 
                         float maxDistance = 50.0; 
                         float darkness = clamp(distance / maxDistance, 0.0, 1.0); 
-                        vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness * 0.8);
+                        vec3 darkenedColor = worldtextures.rgb * (1.0 - darkness * 0.8) * side_darkening_mod;
 
                         gl_FragColor = vec4(darkenedColor, worldtextures.a);
                     }
@@ -243,6 +253,11 @@ class Game
                     const block_id = chunk.at(x, y, z);
 
                     if (block_id !== 0) {
+
+                        //if (this.isExposed(worldX, worldY, worldZ)) {
+                        //    continue; // TODO: Have it so they aren't added to the matrix of no sides are exposed
+                        //}
+
                         matrix.setPosition(worldX, worldY, worldZ);
                         instancedMesh.setMatrixAt(index, matrix);
                         blockIds[index] = block_id;
@@ -259,11 +274,16 @@ class Game
         instancedMesh.frustumCulled = true;
 
 
-        if(instancedMesh.count !== 0){
+        if(instancedMesh.count !== 0 && !this.chunkManager.hasChunk(location)) {
             this.chunkManager.storeChunk(location, chunk, instancedMesh );
-        }
+        } 
+
 
         this.scene.add(instancedMesh);
+    }
+
+    isExposed(x, y, z) {
+
     }
 
     loop() {
@@ -275,6 +295,7 @@ class Game
 
             this.#lastFrameTime = now;
             this.sendPositionUpdate();
+            this.chunkManager.cullChunks(this.player.getPosition());
         }
 
         this.tick_counter++; // For client syncing. We need a global tick counter so that clients only send us updates every tick, instead of wasting calls to the server.
@@ -334,7 +355,21 @@ function websocketConnect() {
 
 // Running
 
+let sky_color = "#87CEEB";
+//let sky = new Sky(scene, sky_color, "NightSky.vert", "NightSky.frag");
+
+const loader = new THREE.CubeTextureLoader();
+loader.setPath('textures/');
+
+const textureCube = loader.load([
+  'bluecloud_bk.png', 'bluecloud_bk.png',
+  'bluecloud_bk.png', 'bluecloud_bk.png',
+  'bluecloud_bk.png', 'bluecloud_bk.png']);
+
+scene.background = textureCube;
+
 let game = new Game(player, sceneWorld, scene, chunkManager);
+
 game.start();
 animate();
 websocketConnect();
