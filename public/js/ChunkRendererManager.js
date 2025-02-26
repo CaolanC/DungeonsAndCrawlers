@@ -52,8 +52,7 @@ export class ChunkRendererManager {
         }
     }
 
-    unloadChunk(location, conv=false){
-
+    unloadChunk(location, player, network_manager, conv=false){
         const key = location;
         if (!conv) {
             key = this.convertKey(location);
@@ -82,7 +81,8 @@ export class ChunkRendererManager {
             mesh.matrix.identity();
             //if (mesh.instanceMatrix) mesh.instanceMatrix.dispose();
         }
-
+        // weboscket
+        network_manager.send("player_dropped_chunk", {username: player.username, chunk_id: key});
         this.chunkMap.delete(key);
     }
 
@@ -90,10 +90,11 @@ export class ChunkRendererManager {
         return this.chunkMap;
     }
 
-    cullChunks(player_position) {
+    cullChunks(player, network_manager) {
+        let player_position = player.getPosition();
         for (let key of this.chunkMap.keys()) {
             if (!this.getValidChunks(player_position).has(key)) {
-                this.unloadChunk(key, true);
+                this.unloadChunk(key, player, network_manager, true);
                 // TODO: Clear the chunks efficiently
             }
         }

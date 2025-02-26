@@ -224,6 +224,13 @@ export class Server {
                         player.loaded_chunks = new Set();
                     }
 
+                    if (msg.type === "player_dropped_chunk") {
+                        let player = this.playerManager.getPlayer(msg.username);
+                        if (player && player.loaded_chunks.has(msg.chunk_id)) {
+                            player.loaded_chunks.delete(msg.chunk_id);
+                        }
+                    }
+
                 } catch (err) {
                     console.error("Bad ws:", err);
                 }
