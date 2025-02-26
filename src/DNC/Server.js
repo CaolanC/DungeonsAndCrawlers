@@ -184,8 +184,7 @@ export class Server {
 
         this.app.post('/join', (req, res) => {
             const username = req.body.username;
-            const player = new Player(username, this.getDefaultSpawnPoint());
-            this.playerManager.addPlayer(username, player);
+
 
             // Redirect with username as url param, this is a terrible method, but it works for now until we actually plan to implement auth
             res.redirect(`/game?username=${encodeURIComponent(username)}`);
@@ -214,12 +213,15 @@ export class Server {
 
                     if (msg.type === "player_connect") {
                         console.log("A PLAYER HAS CONNECTED");
-                        const player = this.playerManager.getPlayer(msg.username);
-                        if (player) {
-                            player.websocket_connection = ws;
-                            player.is_connected = true;
-                        } else {
+                        console.log(msg.username);
+                        let player = this.playerManager.getPlayer(msg.username);
+                        if (!player) {
+                            player = new Player(msg.username, this.getDefaultSpawnPoint());
+                            this.playerManager.addPlayer(msg.username, player);
                         }
+                        player.websocket_connection = ws;
+                        player.is_connected = true;
+                        player.loaded_chunks = new Set();
                     }
 
                 } catch (err) {

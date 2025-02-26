@@ -11,6 +11,7 @@ import { Chunk } from "./Chunk.js";
 import { ChunkRendererManager } from "./ChunkRendererManager.js";
 import { Physics } from "./Physics.js";
 import { Sky } from "./Sky.js";
+//import { Stats } from "stats.js";
 
 console.log("Working in public");
 
@@ -347,6 +348,10 @@ let prevTime = Date.now();
 function animate() {
     let currentTime = Date.now();
     let deltaTime = (currentTime - prevTime) / 1000;
+    //stats.begin();
+
+    //stats.end();
+
     requestAnimationFrame(animate);
     playerMovement.updateMovement(deltaTime);
     physics.update(deltaTime, player);
@@ -384,4 +389,6 @@ animate();
 //websocketConnect();
 console.log(player.username);
 
-
+//var stats = new Stats();
+//stats.showPanel(1);
+//document.body.appendChild( stats.dom );
