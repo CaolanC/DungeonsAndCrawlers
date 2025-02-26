@@ -1,7 +1,14 @@
 export class NetworkManager {
     constructor(url) {
-        this.ws = new WebSocket(url);
+        this.url = url;
         this.handlers = {};
+        this.connect();
+    }
+
+    connect() {
+	console.log(this.url);
+        this.ws = new WebSocket(this.url);
+	console.log(this.ws);
         this.readyPromise = new Promise((resolve) => {
             this.ws.onopen = () => {
                 console.log("Connected to WebSocket");
@@ -10,11 +17,24 @@ export class NetworkManager {
         });
 
         this.ws.onmessage = this.handleMessage.bind(this);
+
+        this.ws.onerror = (err) => {
+            console.error("WebSocket Error:", err);
+        };
+
+        this.ws.onclose = () => {
+            console.warn("WebSocket closed. Reconnecting in 3 seconds...");
+            setTimeout(() => this.connect(), 3000);
+        };
     }
 
     async send(type, payload) {
         await this.readyPromise; // Wait until WebSocket is open
-        this.ws.send(JSON.stringify({ type, ...payload }));
+        if (this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify({ type, ...payload }));
+        } else {
+            console.error("WebSocket is not open. Failed to send message:", type, payload);
+        }
     }
 
     on(eventType, callback) {
@@ -28,11 +48,14 @@ export class NetworkManager {
         }
     }
 }
-
 function test() {
-    const nm = new NetworkManager("ws://localhost:5173");
-    nm.send("player_update", {
-        position: "x,x,z,"
+    const nm = new NetworkManager(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}/ws/`);
+
+    nm.readyPromise.then(() => {
+        nm.send("player_update", {
+            position: "x,x,z"
+        });
     });
 };
-//test();
+// test();
+

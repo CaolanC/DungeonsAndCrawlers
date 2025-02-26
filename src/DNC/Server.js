@@ -81,7 +81,9 @@ export class Server {
         this.app = app;
         this.port = port;
         this.server = createServer(this.app);
-        this.websocket_server = new WebSocketServer({ server: this.server });
+
+	this.websocket_server = new WebSocketServer({port: 3000});
+
     }
 
 
@@ -91,7 +93,7 @@ export class Server {
         this.initSockets();
         await this.initRegistries();
         this.gameLoop();
-        this.server.listen(this.port, () => {
+        this.server.listen(this.port, "0.0.0.0", () => {
             console.log(`PORT: ${this.port}`);
         });
     }
