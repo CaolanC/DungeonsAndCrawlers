@@ -122,6 +122,7 @@ export class Server {
 
     updatePlayers() {
         this.playerManager.getPlayers().forEach((player, key) => {
+            // console.log(player.position);
             if (!player.is_connected) return;
             //EntityPhysicsManager.updatePlayerPhysics(player);
             //console.log(this.chunkManager.getValidChunks(player.position));

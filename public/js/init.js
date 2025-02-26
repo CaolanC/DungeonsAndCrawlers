@@ -26,37 +26,11 @@ const DNC = {
 		// into the block itself. TODO: Consider adding metadata to air with the extra bits.
 		STONE: 1,
 	},
-    FRAMERATE: 10,
+    FRAMERATE: 60,
     RENDER_DISTANCE: 8
 }; // We should be reading this, not hardcoding it. Will fix later
 
 DNC.FRAME_DURATION = 1000 / DNC.FRAMERATE;
-
-class Player
-{
-    constructor(scene, name, position) {
-        this.name = name;
-        this.position = position;
-        this.block = this.createCube();
-        this.scene = scene;
-        this.scene.add(this.block);
-    }
-
-    updatePosition(position) {
-        this.block.position.x = position.x;
-        this.block.position.y = position.y;
-        this.block.position.z = position.z;
-        //console.log("acc working", position.x, position.y, position.z)
-    }
-
-    createCube() {
-        const geometry = new THREE.BoxGeometry( 1, 1, 1 ); 
-        const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
-        const cube = new THREE.Mesh( geometry, material ); 
-
-        return cube;
-    }
-};
 
 class Game
 {

@@ -1,5 +1,7 @@
 // Some logic on page taken from the following source: https://www.youtube.com/watch?v=_aK-1L-GC6I
 
+import { sub } from "three/tsl";
+
 export class Physics {
     constructor(chunks, CHUNK_SIZE, scene) {
         this.chunks = chunks;
@@ -13,25 +15,25 @@ export class Physics {
     // Detects any potential collisions
     broadphase(player) {
         const potentialCollisions = [];
-
-        const minX = Math.floor(player.getPosition().x - 0.5);
-        const maxX = Math.ceil(player.getPosition().x + 0.5);
-        const minY = Math.floor(player.getPosition().y - 0.5);
-        const maxY = Math.ceil(player.getPosition().y + 0.5);
-        const minZ = Math.floor(player.getPosition().z - 0.5);
-        const maxZ = Math.ceil(player.getPosition().z + 0.5);
+        const subvoxels = 3;
+        const minX = Math.floor((player.getPosition().x - 0.5) * subvoxels);
+        const maxX = Math.ceil((player.getPosition().x + 0.5) * subvoxels);
+        const minY = Math.floor((player.getPosition().y - 0.5) * subvoxels);
+        const maxY = Math.ceil((player.getPosition().y + 0.5) * subvoxels);
+        const minZ = Math.floor((player.getPosition().z - 0.5) * subvoxels);
+        const maxZ = Math.ceil((player.getPosition().z + 0.5) * subvoxels);
 
         for(let x = minX; x <= maxX; x++){
             for(let y = minY; y <= maxY; y++){
                 for(let z = minZ; z <= maxZ; z++){
 
-                    const chunkX = Math.floor(x / this.CHUNK_SIZE);
-                    const chunkY = Math.floor(y / this.CHUNK_SIZE);
-                    const chunkZ = Math.floor(z / this.CHUNK_SIZE);
+                    const chunkX = Math.floor(x / (this.CHUNK_SIZE * subvoxels));
+                    const chunkY = Math.floor(y / (this.CHUNK_SIZE * subvoxels));
+                    const chunkZ = Math.floor(z / (this.CHUNK_SIZE * subvoxels));
 
-                    const blockX = x % this.CHUNK_SIZE;
-                    const blockY = y % this.CHUNK_SIZE;
-                    const blockZ = z % this.CHUNK_SIZE;
+                    const blockX = (x % (this.CHUNK_SIZE * subvoxels)) / subvoxels;
+                    const blockY = (y % (this.CHUNK_SIZE * subvoxels)) / subvoxels;
+                    const blockZ = (z % (this.CHUNK_SIZE * subvoxels)) / subvoxels;
 
                     const localBlockX = blockX < 0 ? this.CHUNK_SIZE + blockX : blockX;
                     const localBlockY = blockY < 0 ? this.CHUNK_SIZE + blockY : blockY;
@@ -43,7 +45,7 @@ export class Physics {
                     if(chunkData != null && chunkData.chunk) {
                         const blockID = chunkData.chunk.at(localBlockX, localBlockY, localBlockZ);
                         if(blockID != 0){
-                            potentialCollisions.push(new THREE.Vector3(x, y, z));
+                            potentialCollisions.push(new THREE.Vector3(x / subvoxels, y / subvoxels, z / subvoxels));
                         }
                     }
                 }
