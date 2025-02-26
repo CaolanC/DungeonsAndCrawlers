@@ -16,7 +16,7 @@ import { Sky } from "./Sky.js";
 console.log("Working in public");
 
 const JUMP_FORCE = 5; // Velocity applied on jump
-const SPEED = 12; // Velocity applied on WASD movement
+const SPEED = 7; // Velocity applied on WASD movement
 
 const DNC = {
 	CHUNK_SIZE: 16,
@@ -75,7 +75,7 @@ class Game
 
     async start() {
 
-        await this.network_manager.send("player_connect", {username: player.username});
+        await this.network_manager.send("player_connect", {username: this.player.username});
         this.loop();
     }
 
@@ -296,7 +296,7 @@ class Game
 
             this.#lastFrameTime = now;
             this.sendPositionUpdate();
-            this.chunkManager.cullChunks(this.player.getPosition());
+            this.chunkManager.cullChunks(player, this.network_manager); // TODO: Make it check for chunks that it doesn't have and send them to the player
         }
 
         this.tick_counter++; // For client syncing. We need a global tick counter so that clients only send us updates every tick, instead of wasting calls to the server.
@@ -378,7 +378,7 @@ let game = new Game(player, sceneWorld, scene, chunkManager);
 game.start();
 animate();
 websocketConnect();
-console.log(player.username);
+console.log(player.name);
 
 //var stats = new Stats();
 //stats.showPanel(1);
