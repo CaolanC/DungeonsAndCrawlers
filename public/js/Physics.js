@@ -37,11 +37,11 @@ export class Physics {
                     const localBlockY = blockY < 0 ? this.CHUNK_SIZE + blockY : blockY;
                     const localBlockZ = blockZ < 0 ? this.CHUNK_SIZE + blockZ : blockZ;
 
-                    const key = [chunkX, chunkY, chunkZ]
-                    const chunk = this.chunks.getChunk(key);
+                    const key = [chunkX, chunkY, chunkZ];
+                    const chunkData = this.chunks.getChunk(key);
 
-                    if(chunk){
-                        const blockID = chunk.at(localBlockX, localBlockY, localBlockZ);
+                    if(chunkData != null && chunkData.chunk) {
+                        const blockID = chunkData.chunk.at(localBlockX, localBlockY, localBlockZ);
                         if(blockID != 0){
                             potentialCollisions.push(new THREE.Vector3(x, y, z));
                         }

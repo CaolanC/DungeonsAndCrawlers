@@ -4,6 +4,7 @@ import { Chunk } from "./Chunk.js";
 import { BiomeRegistry } from "./BiomeRegistry.js";
 import { BlockRegistry } from "./BlockRegistry.js";
 import { BiomeMap } from "./BiomeMap.js";
+import { md5 } from "./Hash.js";
 
 export class ChunkManager { 
 
@@ -56,12 +57,22 @@ export class ChunkManager {
                 //}
                 let terrainHeight = this.generateTerrainHeight(worldX, worldZ, biome);
                 //console.log(x, z, "\n-> ", terrainHeight);
+                let should_place_tree = this.shouldPlaceTree(worldX, worldZ);
                 for (let y = 0; y < CHUNK_SIZE; y++) {
                     let worldY = cy * CHUNK_SIZE + y;
 
+                    if (chunk.at(x, y, z) != 0) {
+                        continue;
+                    }
+
                     if (worldY == terrainHeight) {
                         let block = BlockRegistry.blocks.get(biome.layers.surface);
-                        chunk.set(block, x, y, z); 
+
+                        if (should_place_tree) { 
+                            this.placeTree(x, y, z, chunk);
+                            should_place_tree = false;
+                        };
+                        chunk.set(block, x, y, z);
                     } else if (worldY < terrainHeight) {
                         let block = BlockRegistry.blocks.get(biome.layers.subsurface);
                         chunk.set(block, x, y, z); 
@@ -74,6 +85,30 @@ export class ChunkManager {
 
         return chunk;
     }
+
+    placeTree(x, y, z, chunk) {
+        for (let dx = -2; dx <= 2; dx++) {
+            for (let dz = -2; dz <= 2; dz++) {
+                if (chunk.at(x + dx, y + 1, z + dz) === BlockRegistry.blocks.get("DNC:Ice")) {
+                    return; 
+                }
+            }
+        }
+
+        let block = BlockRegistry.blocks.get("DNC:Ice");
+        chunk.set(block, x,  y + 1, z);
+    }   
+
+    shouldPlaceTree(x, z) {
+        let noise_value = perlinNoise2D(0.01 + x * 0.15, 0.01 + z * 0.015) * 40;
+        let hash_input = `${x},${z}`;
+        let hash_value = parseInt(md5(hash_input).slice(0, 8), 16) % 100;
+    
+        let threshold = noise_value + 30; 
+    
+        return hash_value > threshold * 10;
+    }
+    
 
     generateTerrainHeight(x, z, biome) {
         let height = perlinNoise2D(x * 0.05, z * 0.05) * biome.terrain_amplitude; // Scale from -3 to 3
